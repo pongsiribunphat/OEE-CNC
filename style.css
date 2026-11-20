@@ -1,5 +1,5 @@
 /* =========================================================
-   ตัวแปรสีระบบ (Dark Futuristic #050507 & Light Mode)
+   ตัวแปรสีระบบ (Dark Futuristic #050507 & Light Futuristic Pearl HUD)
 ========================================================= */
 :root,
 [data-theme="dark"] {
@@ -24,13 +24,13 @@
 }
 
 [data-theme="light"] {
-  --bg-body: #f1f5f9;
-  --bg-nav: rgba(255, 255, 255, 0.92);
-  --bg-card: rgba(255, 255, 255, 0.94);
-  --bg-subtle: #f8fafc;
-  --bg-input: #ffffff;
-  --border-color: rgba(15, 23, 42, 0.12);
-  --border-glow: rgba(2, 132, 199, 0.3);
+  --bg-body: #eef2f7;
+  --bg-nav: rgba(248, 250, 252, 0.82);
+  --bg-card: rgba(255, 255, 255, 0.74);
+  --bg-subtle: rgba(15, 23, 42, 0.035);
+  --bg-input: rgba(255, 255, 255, 0.92);
+  --border-color: rgba(15, 23, 42, 0.11);
+  --border-glow: rgba(2, 132, 199, 0.42);
   --text-main: #0f172a;
   --text-muted: #475569;
 
@@ -39,7 +39,7 @@
   --green: #16a34a;
   --amber: #d97706;
   --red: #dc2626;
-  --shadow-card: 0 6px 20px rgba(15, 23, 42, 0.06);
+  --shadow-card: 0 10px 30px rgba(15, 23, 42, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.9);
   --font-sans: 'Plus Jakarta Sans', 'Noto Sans Thai', sans-serif;
   --font-mono: 'JetBrains Mono', 'Space Mono', monospace;
 }
@@ -70,7 +70,7 @@ html, body {
 }
 
 /* =========================================================
-   เลเยอร์พื้นหลัง 3D FUTURISTIC / TECHNICAL HUD
+   เลเยอร์พื้นหลัง 3D FUTURISTIC / TECHNICAL HUD (Dark & Light)
 ========================================================= */
 .hud-bg-stage {
   position: fixed;
@@ -79,11 +79,26 @@ html, body {
   pointer-events: none;
   overflow: hidden;
   background: radial-gradient(circle at 50% 45%, #0a0e1a 0%, #050507 62%, #020203 100%);
-  transition: opacity 0.35s ease;
+  transition: background 0.35s ease;
 }
 
 [data-theme="light"] .hud-bg-stage {
-  opacity: 0.06;
+  opacity: 1;
+  background: radial-gradient(circle at 50% 45%, #ffffff 0%, #eaf0f8 58%, #dce5f0 100%);
+}
+
+/* สลับประติมากรรม 3D ระหว่างโหมดมืดและโหมดสว่าง */
+.sculpt-dark {
+  display: inline;
+}
+.sculpt-light {
+  display: none;
+}
+[data-theme="light"] .sculpt-dark {
+  display: none;
+}
+[data-theme="light"] .sculpt-light {
+  display: inline;
 }
 
 /* แสงสปอตไลต์ติดตามเมาส์ */
@@ -104,7 +119,16 @@ html, body {
   pointer-events: none;
 }
 
-/* รูปทรงโค้งมน 3D สีดำเงา */
+[data-theme="light"] .hud-cursor-glow {
+  background: radial-gradient(
+    circle,
+    rgba(14, 165, 233, 0.2) 0%,
+    rgba(37, 99, 235, 0.08) 40%,
+    rgba(255, 255, 255, 0) 72%
+  );
+}
+
+/* รูปทรงโค้งมน 3D */
 .hud-sculpture-wrap {
   position: absolute;
   inset: -4%;
@@ -121,12 +145,8 @@ html, body {
 }
 
 @keyframes sculptureFloat {
-  0% {
-    filter: brightness(0.96);
-  }
-  100% {
-    filter: brightness(1.08);
-  }
+  0% { filter: brightness(0.97); }
+  100% { filter: brightness(1.05); }
 }
 
 /* แกนกลาง Atomic Orbital Rings + ลูกบาศก์เรืองแสง */
@@ -138,7 +158,7 @@ html, body {
   height: min(640px, 88vw);
   transform: translate3d(-50%, -50%, 0);
   will-change: transform;
-  opacity: 0.88;
+  opacity: 0.9;
 }
 
 .hud-core-ambient-glow {
@@ -153,11 +173,54 @@ html, body {
   animation: coreBreathe 4.5s ease-in-out infinite alternate;
 }
 
+[data-theme="light"] .hud-core-ambient-glow {
+  background: radial-gradient(circle, rgba(14, 165, 233, 0.28) 0%, rgba(37, 99, 235, 0.1) 50%, transparent 74%);
+}
+
 .hud-orbital-svg {
   width: 100%;
   height: 100%;
   display: block;
   overflow: visible;
+}
+
+/* สีเส้นวงโคจรและ Crosshair ในโหมดมืด vs โหมดสว่าง */
+.hud-crosshair-line {
+  stroke: rgba(255, 255, 255, 0.14);
+}
+.hud-crosshair-sub {
+  stroke: rgba(56, 189, 248, 0.1);
+}
+.hud-orbit-ellipse {
+  stroke: rgba(255, 255, 255, 0.34);
+}
+.hud-orbit-ellipse-sub {
+  stroke: rgba(255, 255, 255, 0.26);
+}
+.hud-orbit-node {
+  fill: #38bdf8;
+}
+.hud-orbit-labels {
+  fill: rgba(255, 255, 255, 0.42);
+}
+
+[data-theme="light"] .hud-crosshair-line {
+  stroke: rgba(15, 23, 42, 0.16);
+}
+[data-theme="light"] .hud-crosshair-sub {
+  stroke: rgba(2, 132, 199, 0.18);
+}
+[data-theme="light"] .hud-orbit-ellipse {
+  stroke: rgba(15, 23, 42, 0.28);
+}
+[data-theme="light"] .hud-orbit-ellipse-sub {
+  stroke: rgba(2, 132, 199, 0.26);
+}
+[data-theme="light"] .hud-orbit-node {
+  fill: #0284c7;
+}
+[data-theme="light"] .hud-orbit-labels {
+  fill: rgba(15, 23, 42, 0.52);
 }
 
 .orbit-ring-group {
@@ -216,6 +279,11 @@ html, body {
   background-size: 24px 24px;
 }
 
+[data-theme="light"] .hud-grain-overlay {
+  opacity: 0.055;
+  background-image: radial-gradient(rgba(15, 23, 42, 0.55) 0.7px, transparent 0.7px);
+}
+
 /* กรอบข้อความ HUD ตามมุมหน้าจอ */
 .hud-corner-frame {
   position: fixed;
@@ -250,6 +318,16 @@ html, body {
   color: rgba(148, 163, 184, 0.38);
 }
 
+[data-theme="light"] .hud-corner-frame {
+  color: rgba(15, 23, 42, 0.42);
+}
+[data-theme="light"] .hud-code-tag {
+  color: rgba(15, 23, 42, 0.65);
+}
+[data-theme="light"] .hud-code-sub {
+  color: rgba(71, 85, 105, 0.55);
+}
+
 /* =========================================================
    Welcome Role Gate (หน้าต่างเลือกบทบาทตอนเข้าเว็บ)
 ========================================================= */
@@ -264,6 +342,9 @@ html, body {
   justify-content: center;
   padding: 16px;
   overflow-y: auto;
+}
+[data-theme="light"] .welcome-gate-backdrop {
+  background: rgba(226, 232, 240, 0.52);
 }
 .welcome-gate-backdrop.open {
   display: flex;
@@ -280,6 +361,11 @@ html, body {
   box-shadow: 0 28px 70px rgba(0, 0, 0, 0.8), 0 0 40px rgba(37, 99, 235, 0.18);
   text-align: center;
   margin: auto;
+}
+[data-theme="light"] .welcome-gate-card {
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(2, 132, 199, 0.32);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.14), 0 0 36px rgba(14, 165, 233, 0.14);
 }
 .welcome-gate-badge {
   display: inline-flex;
@@ -326,6 +412,9 @@ html, body {
   gap: 14px;
   color: inherit;
   font-family: inherit;
+}
+[data-theme="light"] .role-select-card {
+  background: rgba(248, 250, 252, 0.78);
 }
 .role-select-card:hover {
   transform: translateY(-3px);
@@ -423,7 +512,7 @@ html, body {
   font-weight: 600;
   padding: 4px 10px;
   border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--border-color);
 }
 .role-operator {
   background: rgba(56, 189, 248, 0.12);
@@ -438,7 +527,7 @@ html, body {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--bg-subtle);
   padding: 4px;
   border-radius: 12px;
   border: 1px solid var(--border-color);
@@ -464,7 +553,7 @@ html, body {
 }
 .tab-btn:hover {
   color: var(--text-main);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(56, 189, 248, 0.08);
 }
 .tab-btn.active {
   background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
@@ -561,7 +650,7 @@ html, body {
 }
 
 /* =========================================================
-   Grids & Dark Glassmorphism Cards พร้อมเส้นมุม Technical HUD
+   Grids & Glassmorphism Cards พร้อมเส้นมุม Technical HUD
 ========================================================= */
 .grid-3 {
   display: grid;
@@ -586,7 +675,7 @@ html, body {
   border: 1px solid var(--border-color);
   border-radius: 16px;
   box-shadow: var(--shadow-card);
-  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease, background 0.3s ease;
 }
 .card {
   padding: 18px;
@@ -594,7 +683,7 @@ html, body {
   overflow: hidden;
 }
 
-/* เส้นมุม Technical HUD บางๆ บนการ์ด */
+/* เส้นมุม Technical HUD บางๆ บนการ์ด (ทั้งโหมดมืดและโหมดสว่าง) */
 .card::before,
 .machine-bar::before,
 .qc-top-summary::before {
@@ -624,10 +713,27 @@ html, body {
   pointer-events: none;
 }
 
+[data-theme="light"] .card::before,
+[data-theme="light"] .machine-bar::before,
+[data-theme="light"] .qc-top-summary::before {
+  border-top-color: rgba(2, 132, 199, 0.65);
+  border-left-color: rgba(2, 132, 199, 0.65);
+}
+[data-theme="light"] .card::after,
+[data-theme="light"] .machine-bar::after,
+[data-theme="light"] .qc-top-summary::after {
+  border-bottom-color: rgba(2, 132, 199, 0.45);
+  border-right-color: rgba(2, 132, 199, 0.45);
+}
+
 .card:hover,
 .event-box:hover {
   border-color: var(--border-glow);
   box-shadow: 0 14px 40px rgba(0, 0, 0, 0.72), 0 0 24px rgba(56, 189, 248, 0.12);
+}
+[data-theme="light"] .card:hover,
+[data-theme="light"] .event-box:hover {
+  box-shadow: 0 14px 36px rgba(15, 23, 42, 0.12), 0 0 24px rgba(2, 132, 199, 0.14);
 }
 
 .card-accent-border {
@@ -719,7 +825,7 @@ html, body {
   word-break: break-word;
 }
 [data-theme="light"] .idle-monitor {
-  background: var(--bg-subtle);
+  background: rgba(241, 245, 249, 0.8);
 }
 
 .machine-action-col {
@@ -739,7 +845,7 @@ html, body {
   border: 1px solid var(--border-color);
 }
 [data-theme="light"] .status-lamps {
-  background: var(--bg-subtle);
+  background: rgba(241, 245, 249, 0.85);
 }
 .lamp-item {
   display: flex;
@@ -825,6 +931,9 @@ html, body {
   border-color: rgba(56, 189, 248, 0.36);
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.68), 0 0 26px rgba(37, 99, 235, 0.14);
 }
+[data-theme="light"] .oee-card-featured {
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.1), 0 0 24px rgba(2, 132, 199, 0.15);
+}
 .oee-big {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
@@ -838,8 +947,8 @@ html, body {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border-color);
   padding: 10px;
   border-radius: 10px;
   text-align: center;
@@ -1047,7 +1156,7 @@ html, body {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  border: 1.5px dashed rgba(56, 189, 248, 0.35);
+  border: 1.5px dashed rgba(56, 189, 248, 0.42);
   border-radius: 12px;
   padding: 18px 12px;
   text-align: center;
@@ -1057,7 +1166,7 @@ html, body {
 }
 .upload-dropzone:hover {
   border-color: var(--primary);
-  background: rgba(56, 189, 248, 0.06);
+  background: rgba(56, 189, 248, 0.08);
 }
 .upload-icon { font-size: 1.6rem; }
 .upload-main-text { font-weight: 600; font-size: 0.9rem; }
@@ -1125,12 +1234,12 @@ html, body {
   box-shadow: 0 4px 16px rgba(14, 165, 233, 0.28);
 }
 .btn-outline-primary {
-  background: rgba(56, 189, 248, 0.06);
-  border: 1px solid rgba(56, 189, 248, 0.45);
+  background: rgba(56, 189, 248, 0.08);
+  border: 1px solid rgba(56, 189, 248, 0.48);
   color: var(--primary);
 }
 .btn-outline-primary:hover:not(:disabled) {
-  background: rgba(56, 189, 248, 0.15);
+  background: rgba(56, 189, 248, 0.16);
 }
 
 .form-group {
@@ -1212,7 +1321,7 @@ th {
   font-size: 0.78rem;
   color: var(--text-muted);
   font-weight: 600;
-  background: rgba(255, 255, 255, 0.025);
+  background: var(--bg-subtle);
 }
 .empty-cell {
   text-align: center;
@@ -1223,7 +1332,7 @@ th {
   cursor: pointer;
 }
 .clickable-row:hover {
-  background: rgba(56, 189, 248, 0.06);
+  background: rgba(56, 189, 248, 0.08);
 }
 .btn-evidence-thumb {
   display: inline-flex;
@@ -1263,6 +1372,9 @@ th {
   padding: 16px;
   overflow-y: auto;
 }
+[data-theme="light"] .modal-backdrop {
+  background: rgba(15, 23, 42, 0.45);
+}
 .modal-backdrop.open {
   display: flex;
 }
@@ -1277,7 +1389,9 @@ th {
   box-shadow: 0 28px 70px rgba(0, 0, 0, 0.75);
 }
 [data-theme="light"] .modal-content {
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.94);
+  border-color: rgba(2, 132, 199, 0.3);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.16);
 }
 .modal-header {
   display: flex;

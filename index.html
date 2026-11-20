@@ -13,17 +13,17 @@
 
   <!-- =========================================================
        เลเยอร์ตกแต่งพื้นหลัง 3D FUTURISTIC / TECHNICAL HUD
-       (pointer-events: none ไม่บังการคลิกปุ่มหรือช่องกรอกข้อมูล)
+       (รองรับทั้งโหมดมืด Obsidian 3D และโหมดสว่าง Pearl Ceramic 3D)
   ========================================================== -->
   <div id="futuristicHudLayer" class="hud-bg-stage" aria-hidden="true">
     <!-- 1. แสงเรืองแสงติดตามเมาส์ -->
     <div id="hudCursorGlow" class="hud-cursor-glow"></div>
 
-    <!-- 2. รูปทรงโค้งมนสีดำเงาแบบ 3D Organic Liquid Sculpture -->
+    <!-- 2. รูปทรงโค้งมนแบบ 3D Organic Liquid Sculpture -->
     <div id="hudSculptureWrap" class="hud-sculpture-wrap">
       <svg class="hud-sculpture-svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
         <defs>
-          <!-- เฉดแสงเงาสะท้อนบนพื้นผิวสีดำเงา 3D -->
+          <!-- เฉดสีโหมดมืด (Obsidian Black Gloss 3D) -->
           <linearGradient id="obsidianRimLeft" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stop-color="#383c47" stop-opacity="0.72" />
             <stop offset="22%" stop-color="#171920" stop-opacity="0.95" />
@@ -49,38 +49,76 @@
           <filter id="sculptureDepth" x="-15%" y="-15%" width="130%" height="130%">
             <feDropShadow dx="0" dy="24" stdDeviation="28" flood-color="#000000" flood-opacity="0.92" />
           </filter>
+
+          <!-- เฉดสีโหมดสว่าง (Pearl White & Frosted Silver 3D) -->
+          <linearGradient id="pearlRimLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.96" />
+            <stop offset="32%" stop-color="#e2e8f0" stop-opacity="0.92" />
+            <stop offset="68%" stop-color="#cbd5e1" stop-opacity="0.88" />
+            <stop offset="90%" stop-color="#f8fafc" stop-opacity="0.95" />
+            <stop offset="100%" stop-color="#e2e8f0" stop-opacity="0.95" />
+          </linearGradient>
+
+          <linearGradient id="pearlRimRight" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.96" />
+            <stop offset="35%" stop-color="#dce5f2" stop-opacity="0.92" />
+            <stop offset="70%" stop-color="#c4d1e3" stop-opacity="0.88" />
+            <stop offset="92%" stop-color="#f1f5f9" stop-opacity="0.95" />
+            <stop offset="100%" stop-color="#e2e8f0" stop-opacity="0.95" />
+          </linearGradient>
+
+          <linearGradient id="pearlHighlight" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0" />
+            <stop offset="50%" stop-color="#ffffff" stop-opacity="0.95" />
+            <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+          </linearGradient>
+
+          <filter id="pearlDepth" x="-15%" y="-15%" width="130%" height="130%">
+            <feDropShadow dx="0" dy="18" stdDeviation="22" flood-color="#64748b" flood-opacity="0.24" />
+          </filter>
         </defs>
 
-        <!-- โครงสร้างโค้งมน 3D ฝั่งซ้าย -->
-        <g filter="url(#sculptureDepth)">
+        <!-- ชุดประติมากรรม 3D สำหรับโหมดมืด -->
+        <g class="sculpt-dark" filter="url(#sculptureDepth)">
           <path d="M-120,-60 C160,60 280,220 220,410 C165,585 -40,670 -110,940 L-220,940 L-220,-80 Z"
                 fill="url(#obsidianRimLeft)" />
           <path d="M-80,170 C190,145 360,260 445,450 C525,630 430,820 330,960 L215,960 C310,790 385,620 315,470 C245,320 105,245 -90,265 Z"
                 fill="url(#obsidianRimLeft)" />
-          <!-- เส้นไฮไลต์แสงสะท้อนขอบ -->
           <path d="M-75,175 C190,150 355,265 440,450 C518,625 425,815 325,955"
                 fill="none" stroke="url(#specularHighlight)" stroke-width="3" />
-        </g>
 
-        <!-- โครงสร้างโค้งมน 3D ฝั่งขวา -->
-        <g filter="url(#sculptureDepth)">
           <path d="M1540,-80 C1340,140 1180,320 1040,560 C910,780 860,890 820,980 L965,980 C1020,865 1110,715 1235,515 C1355,325 1475,185 1580,75 Z"
                 fill="url(#obsidianRimRight)" />
           <path d="M1520,250 C1320,380 1235,575 1280,790 C1305,895 1350,950 1390,990 L1560,990 Z"
                 fill="url(#obsidianRimRight)" />
-          <!-- เส้นไฮไลต์แสงสะท้อนขอบฝั่งขวา -->
           <path d="M1535,-70 C1335,148 1175,328 1035,568 C908,785 860,890 822,975"
                 fill="none" stroke="url(#specularHighlight)" stroke-width="3" />
+        </g>
+
+        <!-- ชุดประติมากรรม 3D สำหรับโหมดสว่าง -->
+        <g class="sculpt-light" filter="url(#pearlDepth)">
+          <path d="M-120,-60 C160,60 280,220 220,410 C165,585 -40,670 -110,940 L-220,940 L-220,-80 Z"
+                fill="url(#pearlRimLeft)" />
+          <path d="M-80,170 C190,145 360,260 445,450 C525,630 430,820 330,960 L215,960 C310,790 385,620 315,470 C245,320 105,245 -90,265 Z"
+                fill="url(#pearlRimLeft)" />
+          <path d="M-75,175 C190,150 355,265 440,450 C518,625 425,815 325,955"
+                fill="none" stroke="url(#pearlHighlight)" stroke-width="3.5" />
+
+          <path d="M1540,-80 C1340,140 1180,320 1040,560 C910,780 860,890 820,980 L965,980 C1020,865 1110,715 1235,515 C1355,325 1475,185 1580,75 Z"
+                fill="url(#pearlRimRight)" />
+          <path d="M1520,250 C1320,380 1235,575 1280,790 C1305,895 1350,950 1390,990 L1560,990 Z"
+                fill="url(#pearlRimRight)" />
+          <path d="M1535,-70 C1335,148 1175,328 1035,568 C908,785 860,890 822,975"
+                fill="none" stroke="url(#pearlHighlight)" stroke-width="3.5" />
         </g>
       </svg>
     </div>
 
-    <!-- 3. แกนกลาง Technical HUD: วงโคจร Atomic Orbital Rings + ลูกบาศก์ 3D เรืองแสงสีน้ำเงิน/ไซยาน -->
+    <!-- 3. แกนกลาง Technical HUD: วงโคจร Atomic Orbital Rings + ลูกบาศก์ 3D เรืองแสง -->
     <div id="hudOrbitalCore" class="hud-orbital-core">
       <div class="hud-core-ambient-glow"></div>
       <svg class="hud-orbital-svg" viewBox="0 0 640 640">
         <defs>
-          <!-- เฉดสีลูกบาศก์ 3D Cobalt / Cyan -->
           <linearGradient id="cubeTopGrad" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stop-color="#93c5fd" />
             <stop offset="55%" stop-color="#38bdf8" />
@@ -108,35 +146,35 @@
           </filter>
         </defs>
 
-        <!-- เส้นแกนอ้างอิงแนวตั้งแบบ Technical Crosshair -->
-        <line x1="320" y1="36" x2="320" y2="604" stroke="rgba(255,255,255,0.14)" stroke-width="1" stroke-dasharray="4 6" />
-        <line x1="60" y1="320" x2="580" y2="320" stroke="rgba(56,189,248,0.1)" stroke-width="1" stroke-dasharray="3 8" />
+        <!-- เส้นแกนอ้างอิงแนวตั้ง-แนวนอนแบบ Technical Crosshair -->
+        <line class="hud-crosshair-line" x1="320" y1="36" x2="320" y2="604" stroke-width="1" stroke-dasharray="4 6" />
+        <line class="hud-crosshair-sub" x1="60" y1="320" x2="580" y2="320" stroke-width="1" stroke-dasharray="3 8" />
 
-        <!-- วงโคจรที่ 1 (แนวตั้งเรียวยาว) -->
+        <!-- วงโคจรที่ 1 -->
         <g class="orbit-ring-group orbit-slow-cw">
-          <ellipse cx="320" cy="320" rx="108" ry="268"
-                   fill="none" stroke="rgba(255,255,255,0.34)" stroke-width="1.15" />
-          <circle cx="320" cy="52" r="3" fill="#38bdf8" />
+          <ellipse class="hud-orbit-ellipse" cx="320" cy="320" rx="108" ry="268"
+                   fill="none" stroke-width="1.15" />
+          <circle class="hud-orbit-node" cx="320" cy="52" r="3" />
         </g>
 
-        <!-- วงโคจรที่ 2 (เอียง +58 องศา) -->
+        <!-- วงโคจรที่ 2 -->
         <g class="orbit-ring-group orbit-med-ccw">
-          <ellipse cx="320" cy="320" rx="108" ry="268"
+          <ellipse class="hud-orbit-ellipse-sub" cx="320" cy="320" rx="108" ry="268"
                    transform="rotate(58 320 320)"
-                   fill="none" stroke="rgba(255,255,255,0.28)" stroke-width="1.1" />
-          <circle cx="547" cy="178" r="2.5" fill="#93c5fd" />
+                   fill="none" stroke-width="1.1" />
+          <circle class="hud-orbit-node" cx="547" cy="178" r="2.5" />
         </g>
 
-        <!-- วงโคจรที่ 3 (เอียง -58 องศา) -->
+        <!-- วงโคจรที่ 3 -->
         <g class="orbit-ring-group orbit-slow-ccw">
-          <ellipse cx="320" cy="320" rx="108" ry="268"
+          <ellipse class="hud-orbit-ellipse-sub" cx="320" cy="320" rx="108" ry="268"
                    transform="rotate(-58 320 320)"
-                   fill="none" stroke="rgba(255,255,255,0.28)" stroke-width="1.1" />
-          <circle cx="93" cy="462" r="2.5" fill="#38bdf8" />
+                   fill="none" stroke-width="1.1" />
+          <circle class="hud-orbit-node" cx="93" cy="462" r="2.5" />
         </g>
 
-        <!-- ตัวอักษร HUD เล็กๆ รอบวงโคจร -->
-        <g fill="rgba(255,255,255,0.42)" font-family="'Space Mono', monospace" font-size="10" text-anchor="middle">
+        <!-- ตัวอักษร HUD รอบวงโคจร -->
+        <g class="hud-orbit-labels" font-family="'Space Mono', monospace" font-size="10" text-anchor="middle">
           <text x="235" y="165">O</text>
           <text x="405" y="165">E</text>
           <text x="155" y="324">S1</text>
@@ -147,7 +185,6 @@
 
         <!-- ลูกบาศก์ Isometric 3D เรืองแสงสีน้ำเงิน/ไซยานตรงกลาง -->
         <g class="hud-center-cube" filter="url(#neonBlueBlur)">
-          <!-- แสงฟุ้งด้านหลังลูกบาศก์ -->
           <circle cx="320" cy="320" r="78" fill="url(#cubeCoreGlow)" />
 
           <!-- ด้านซ้ายของลูกบาศก์ -->
@@ -193,7 +230,7 @@
   </div>
 
   <!-- ==========================================
-       หน้าต่างเลือกบทบาทก่อนเข้าใช้งาน (ผู้เข้าชม vs ผู้จัดการ)
+       หน้าต่างเลือกบทบาทก่อนเข้าใช้งาน (พนักงาน vs ผู้จัดการ)
   =========================================== -->
   <div id="welcomeRoleGate" class="welcome-gate-backdrop open">
     <div class="welcome-gate-card">
@@ -207,13 +244,13 @@
       <div class="welcome-role-grid">
         <button type="button" id="btnChooseVisitor" class="role-select-card">
           <div>
-            <div class="role-card-icon">👀</div>
-            <div class="role-card-title">ผู้เข้าชม / พนักงาน</div>
+            <div class="role-card-icon">👷</div>
+            <div class="role-card-title">พนักงาน (Operator)</div>
             <p class="role-card-desc">
               เข้าดูรายการผลิต บันทึกตรวจสอบคุณภาพชิ้นงาน (ค่า Q) แยก Station 1 - 2 และแนบรูปภาพหลักฐาน (ไม่ต้องใช้รหัสผ่าน)
             </p>
           </div>
-          <span class="role-card-cta cta-visitor">เข้าสู่ระบบในฐานะผู้เข้าชม ➔</span>
+          <span class="role-card-cta cta-visitor">เข้าสู่ระบบในฐานะพนักงาน ➔</span>
         </button>
 
         <button type="button" id="btnChooseManager" class="role-select-card manager-card">
@@ -237,11 +274,11 @@
         <div class="brand">
           <span class="brand-dot"></span>
           <span>OEE-CNC</span>
-          <span id="roleBadge" class="role-badge role-operator">👀 ผู้เข้าชม / พนักงาน</span>
+          <span id="roleBadge" class="role-badge role-operator">👷 พนักงาน</span>
         </div>
       </div>
 
-      <!-- แถบเมนูสำหรับโหมดผู้เข้าชม / พนักงาน -->
+      <!-- แถบเมนูสำหรับโหมดพนักงาน -->
       <div id="operatorNavTabs" class="nav-tabs" role="tablist">
         <button class="tab-btn active" data-target="page-qc">📋 บันทึกตรวจสอบคุณภาพ (ค่า Q)</button>
       </div>
@@ -272,11 +309,11 @@
   <main class="container">
 
     <!-- ==========================================
-         หน้าของผู้เข้าชม / พนักงาน: ตรวจสอบคุณภาพ (ค่า Q)
+         หน้าของพนักงาน: ตรวจสอบคุณภาพ (ค่า Q)
     =========================================== -->
     <section id="page-qc" class="page-section active">
       <div class="page-heading">
-        <h2 class="section-title">บันทึกตรวจสอบคุณภาพชิ้นงาน (สำหรับผู้เข้าชม / พนักงาน)</h2>
+        <h2 class="section-title">บันทึกตรวจสอบคุณภาพชิ้นงาน (สำหรับพนักงาน)</h2>
         <p class="section-subtitle">เลือกหมายเลขชิ้นงาน ประเมินคุณภาพ Station 1 และ Station 2 พร้อมแนบรูปภาพหลักฐานก่อนบันทึก</p>
       </div>
 
@@ -999,9 +1036,182 @@
     </div>
   </div>
 
-  <!-- สคริปต์ตกแต่งแอนิเมชัน 3D Parallax, Dust Particles และเอฟเฟกต์ตัวเลข (แยกอิสระจากระบบหลัก) -->
+  <!-- =========================================================
+       สคริปต์ควบคุมหน้าต่างเข้าสู่ระบบ, เลือกบทบาท, สลับโหมดสี และแอนิเมชัน 3D
+       (ทำงานทันที 100% แม้ยังโหลด Firebase หรือกราฟไม่เสร็จ)
+  ========================================================== -->
   <script>
-    (function initFuturisticVisuals() {
+    (function initCoreUIAndVisuals() {
+      // แจ้งเตือนหากเปิดไฟล์ตรงๆ โดยไม่ผ่าน Live Server
+      if (window.location.protocol === "file:") {
+        const st = document.getElementById("firebaseStatus");
+        if (st) st.textContent = "⚠️ กรุณาเปิดผ่าน Live Server";
+      }
+
+      // 1. ระบบสลับโหมดมืด / โหมดสว่าง
+      const btnThemeToggle = document.getElementById("btnThemeToggle");
+      const themeIcon = document.getElementById("themeIcon");
+      const themeText = document.getElementById("themeText");
+
+      function applyTheme(theme) {
+        document.documentElement.setAttribute("data-theme", theme);
+        localStorage.setItem("oee_cnc_theme", theme);
+        if (themeIcon) themeIcon.textContent = theme === "light" ? "🌙" : "☀️";
+        if (themeText) themeText.textContent = theme === "light" ? "โหมดมืด" : "โหมดสว่าง";
+      }
+
+      const savedTheme = localStorage.getItem("oee_cnc_theme") || "dark";
+      applyTheme(savedTheme);
+
+      // 2. ระบบเลือกบทบาท พนักงาน vs ผู้จัดการ
+      const welcomeGate = document.getElementById("welcomeRoleGate");
+      const loginModal = document.getElementById("managerLoginModal");
+      const loginInput = document.getElementById("managerPasswordInput");
+      const loginError = document.getElementById("managerLoginError");
+
+      window.OEE_UI = {
+        managerPin: "1234",
+        isManager: sessionStorage.getItem("oee_session_role") === "manager",
+        onRender: null,
+        applyTheme,
+        openManagerLoginPopup() {
+          if (loginInput) loginInput.value = "";
+          if (loginError) loginError.style.display = "none";
+          if (loginModal) loginModal.classList.add("open");
+          setTimeout(() => { if (loginInput) loginInput.focus(); }, 50);
+        },
+        setRoleMode(isManager) {
+          this.isManager = Boolean(isManager);
+          sessionStorage.setItem("oee_session_role", this.isManager ? "manager" : "visitor");
+
+          if (welcomeGate) welcomeGate.classList.remove("open");
+
+          const roleBadge = document.getElementById("roleBadge");
+          const operatorNavTabs = document.getElementById("operatorNavTabs");
+          const managerNavTabs = document.getElementById("managerNavTabs");
+
+          document.querySelectorAll(".page-section").forEach(sec => sec.classList.remove("active"));
+
+          if (this.isManager) {
+            if (roleBadge) {
+              roleBadge.textContent = "👔 โหมดผู้จัดการ";
+              roleBadge.className = "role-badge role-manager";
+            }
+            if (operatorNavTabs) operatorNavTabs.style.display = "none";
+            if (managerNavTabs) {
+              managerNavTabs.style.display = "flex";
+              managerNavTabs.querySelectorAll(".tab-btn").forEach((b, idx) => {
+                b.classList.toggle("active", idx === 0);
+              });
+            }
+            const dashPage = document.getElementById("page-dashboard");
+            if (dashPage) dashPage.classList.add("active");
+          } else {
+            if (roleBadge) {
+              roleBadge.textContent = "👷 พนักงาน";
+              roleBadge.className = "role-badge role-operator";
+            }
+            if (operatorNavTabs) operatorNavTabs.style.display = "flex";
+            if (managerNavTabs) managerNavTabs.style.display = "none";
+
+            const qcPage = document.getElementById("page-qc");
+            if (qcPage) qcPage.classList.add("active");
+          }
+
+          if (typeof this.onRender === "function") {
+            requestAnimationFrame(() => this.onRender());
+          }
+        }
+      };
+
+      const btnChooseVisitor = document.getElementById("btnChooseVisitor");
+      if (btnChooseVisitor) {
+        btnChooseVisitor.addEventListener("click", () => window.OEE_UI.setRoleMode(false));
+      }
+
+      const btnChooseManager = document.getElementById("btnChooseManager");
+      if (btnChooseManager) {
+        btnChooseManager.addEventListener("click", () => window.OEE_UI.openManagerLoginPopup());
+      }
+
+      const btnOpenRoleGate = document.getElementById("btnOpenRoleGate");
+      if (btnOpenRoleGate) {
+        btnOpenRoleGate.addEventListener("click", () => {
+          if (welcomeGate) welcomeGate.classList.add("open");
+        });
+      }
+
+      const btnCloseLoginModal = document.getElementById("btnCloseLoginModal");
+      if (btnCloseLoginModal) {
+        btnCloseLoginModal.addEventListener("click", () => {
+          if (loginModal) loginModal.classList.remove("open");
+        });
+      }
+
+      if (loginModal) {
+        loginModal.addEventListener("click", (e) => {
+          if (e.target === loginModal) loginModal.classList.remove("open");
+        });
+      }
+
+      const managerLoginForm = document.getElementById("managerLoginForm");
+      if (managerLoginForm) {
+        managerLoginForm.addEventListener("submit", (e) => {
+          e.preventDefault();
+          const enteredPin = loginInput ? loginInput.value.trim() : "";
+          const validPin = String(window.OEE_UI.managerPin || "1234");
+
+          if (enteredPin === validPin) {
+            if (loginModal) loginModal.classList.remove("open");
+            if (loginError) loginError.style.display = "none";
+            window.OEE_UI.setRoleMode(true);
+          } else {
+            if (loginError) loginError.style.display = "block";
+            if (loginInput) {
+              loginInput.value = "";
+              loginInput.focus();
+            }
+          }
+        });
+      }
+
+      if (btnThemeToggle) {
+        btnThemeToggle.addEventListener("click", () => {
+          const current = document.documentElement.getAttribute("data-theme");
+          const next = current === "light" ? "dark" : "light";
+          applyTheme(next);
+          if (typeof window.OEE_UI.onRender === "function") {
+            window.OEE_UI.onRender();
+          }
+        });
+      }
+
+      // สลับแท็บเมนูในโหมดผู้จัดการ
+      document.querySelectorAll("#managerNavTabs .tab-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          if (!window.OEE_UI.isManager) return;
+          document.querySelectorAll("#managerNavTabs .tab-btn").forEach(b => b.classList.remove("active"));
+          document.querySelectorAll(".page-section").forEach(sec => sec.classList.remove("active"));
+          btn.classList.add("active");
+          const targetSec = document.getElementById(btn.dataset.target);
+          if (targetSec) targetSec.classList.add("active");
+          if (typeof window.OEE_UI.onRender === "function") {
+            requestAnimationFrame(() => window.OEE_UI.onRender());
+          }
+        });
+      });
+
+      // ตรวจสอบสถานะการล็อกอินค้างจาก Session เดิม
+      const initialSessionRole = sessionStorage.getItem("oee_session_role");
+      if (initialSessionRole === "manager") {
+        window.OEE_UI.setRoleMode(true);
+      } else if (initialSessionRole === "visitor") {
+        window.OEE_UI.setRoleMode(false);
+      } else if (welcomeGate) {
+        welcomeGate.classList.add("open");
+      }
+
+      // 3. แอนิเมชัน 3D Parallax & Dust Particles
       const cursorGlow = document.getElementById("hudCursorGlow");
       const sculptureWrap = document.getElementById("hudSculptureWrap");
       const orbitalCore = document.getElementById("hudOrbitalCore");
@@ -1017,7 +1227,6 @@
         targetY = e.clientY;
       }, { passive: true });
 
-      // ระบบฝุ่นละออง 3D และ micro-specks
       const ctx = dustCanvas ? dustCanvas.getContext("2d") : null;
       let particles = [];
 
@@ -1029,11 +1238,11 @@
         particles = Array.from({ length: count }, () => ({
           x: Math.random() * dustCanvas.width,
           y: Math.random() * dustCanvas.height,
-          r: Math.random() * 1.6 + 0.4,
+          r: Math.random() * 1.6 + 0.45,
           vx: (Math.random() - 0.5) * 0.18,
           vy: (Math.random() - 0.5) * 0.18 - 0.05,
-          alpha: Math.random() * 0.45 + 0.1,
-          isCyan: Math.random() > 0.72
+          alpha: Math.random() * 0.45 + 0.12,
+          isAccent: Math.random() > 0.65
         }));
       }
 
@@ -1043,7 +1252,6 @@
       }
 
       function animateFrame() {
-        // หน่วงเมาส์แบบนุ่มนวล (Lerp)
         currentX += (targetX - currentX) * 0.08;
         currentY += (targetY - currentY) * 0.08;
 
@@ -1062,7 +1270,9 @@
         }
 
         if (dustCanvas && ctx) {
+          const isLight = document.documentElement.getAttribute("data-theme") === "light";
           ctx.clearRect(0, 0, dustCanvas.width, dustCanvas.height);
+
           for (let i = 0; i < particles.length; i++) {
             const p = particles[i];
             p.x += p.vx;
@@ -1075,9 +1285,16 @@
 
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-            ctx.fillStyle = p.isCyan
-              ? `rgba(56, 189, 248, ${p.alpha})`
-              : `rgba(226, 232, 240, ${p.alpha * 0.75})`;
+
+            if (isLight) {
+              ctx.fillStyle = p.isAccent
+                ? `rgba(2, 132, 199, ${p.alpha * 0.9})`
+                : `rgba(71, 85, 105, ${p.alpha * 0.65})`;
+            } else {
+              ctx.fillStyle = p.isAccent
+                ? `rgba(56, 189, 248, ${p.alpha})`
+                : `rgba(226, 232, 240, ${p.alpha * 0.75})`;
+            }
             ctx.fill();
           }
         }
@@ -1086,7 +1303,6 @@
       }
       requestAnimationFrame(animateFrame);
 
-      // เอฟเฟกต์แสงกระพริบนุ่มๆ เมื่อตัวเลข OEE หรือค่า Q อัปเดต
       const metricIds = ["oeeS1", "oeeS2", "oeeTotal", "qcBigPercent"];
       metricIds.forEach((id) => {
         const el = document.getElementById(id);
@@ -1101,6 +1317,8 @@
     })();
   </script>
 
+  <!-- โหลดไลบรารีกราฟ Chart.js ก่อนสคริปต์หลักเสมอ -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script type="module" src="oee-calc.js"></script>
 </body>
 </html>

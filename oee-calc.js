@@ -15,35 +15,6 @@ import { initManagerQC, renderManagerQC } from "./manager-qc.js";
 const rootRef = ref(db, "cnc_oee_project");
 
 // =========================================================
-// ระบบสลับโหมดมืด / โหมดสว่าง (Dark & Light Mode)
-// =========================================================
-const btnThemeToggle = document.getElementById("btnThemeToggle");
-const themeIcon = document.getElementById("themeIcon");
-const themeText = document.getElementById("themeText");
-
-function applyTheme(theme) {
-  document.documentElement.setAttribute("data-theme", theme);
-  localStorage.setItem("oee_cnc_theme", theme);
-  if (theme === "light") {
-    themeIcon.textContent = "🌙";
-    themeText.textContent = "โหมดมืด";
-  } else {
-    themeIcon.textContent = "☀️";
-    themeText.textContent = "โหมดสว่าง";
-  }
-}
-
-const savedTheme = localStorage.getItem("oee_cnc_theme") || "dark";
-applyTheme(savedTheme);
-
-btnThemeToggle.addEventListener("click", () => {
-  const current = document.documentElement.getAttribute("data-theme");
-  const next = current === "light" ? "dark" : "light";
-  applyTheme(next);
-  calculateAndRender();
-});
-
-// =========================================================
 // ตัวแปรสถานะหลักของระบบ OEE
 // =========================================================
 let state = {
@@ -98,123 +69,31 @@ async function sendToArduino(cmd) {
   }
 }
 
-initQC();
-initChartsAndModal();
-initManagerQC(() => calculateAndRender());
-
-// =========================================================
-// ระบบหน้าต่างเลือกบทบาทตอนเข้าเว็บ & แยกสิทธิ์ ผู้เข้าชม vs ผู้จัดการ
-// =========================================================
-let isManagerAuthenticated = sessionStorage.getItem("oee_session_role") === "manager";
-const welcomeGate = document.getElementById("welcomeRoleGate");
-const loginModal = document.getElementById("managerLoginModal");
-const loginInput = document.getElementById("managerPasswordInput");
-const loginError = document.getElementById("managerLoginError");
-
-function openManagerLoginPopup() {
-  loginInput.value = "";
-  loginError.style.display = "none";
-  loginModal.classList.add("open");
-  setTimeout(() => loginInput.focus(), 50);
+try {
+  initQC();
+} catch (err) {
+  console.error("initQC error:", err);
 }
 
-function setRoleMode(isManager) {
-  isManagerAuthenticated = isManager;
-  if (isManager) {
-    sessionStorage.setItem("oee_session_role", "manager");
-  } else {
-    sessionStorage.setItem("oee_session_role", "visitor");
-  }
-
-  if (welcomeGate) welcomeGate.classList.remove("open");
-
-  const roleBadge = document.getElementById("roleBadge");
-  const operatorNavTabs = document.getElementById("operatorNavTabs");
-  const managerNavTabs = document.getElementById("managerNavTabs");
-
-  document.querySelectorAll(".page-section").forEach(sec => sec.classList.remove("active"));
-
-  if (isManager) {
-    roleBadge.textContent = "👔 โหมดผู้จัดการ";
-    roleBadge.className = "role-badge role-manager";
-    operatorNavTabs.style.display = "none";
-    managerNavTabs.style.display = "flex";
-
-    managerNavTabs.querySelectorAll(".tab-btn").forEach((b, idx) => {
-      b.classList.toggle("active", idx === 0);
-    });
-    document.getElementById("page-dashboard").classList.add("active");
-    calculateAndRender();
-  } else {
-    roleBadge.textContent = "👀 ผู้เข้าชม / พนักงาน";
-    roleBadge.className = "role-badge role-operator";
-    operatorNavTabs.style.display = "flex";
-    managerNavTabs.style.display = "none";
-
-    document.getElementById("page-qc").classList.add("active");
-    calculateAndRender();
-  }
+try {
+  initChartsAndModal();
+} catch (err) {
+  console.error("initChartsAndModal error:", err);
 }
 
-document.getElementById("btnChooseVisitor").addEventListener("click", () => {
-  setRoleMode(false);
-});
-
-document.getElementById("btnChooseManager").addEventListener("click", () => {
-  openManagerLoginPopup();
-});
-
-document.getElementById("btnOpenRoleGate").addEventListener("click", () => {
-  if (welcomeGate) welcomeGate.classList.add("open");
-});
-
-document.getElementById("btnCloseLoginModal").addEventListener("click", () => {
-  loginModal.classList.remove("open");
-});
-
-loginModal.addEventListener("click", (e) => {
-  if (e.target === loginModal) loginModal.classList.remove("open");
-});
-
-document.getElementById("managerLoginForm").addEventListener("submit", (e) => {
-  e.preventDefault();
-  const enteredPin = loginInput.value.trim();
-  const validPin = String(state.settings.managerPin || "1234");
-
-  if (enteredPin === validPin) {
-    loginModal.classList.remove("open");
-    loginError.style.display = "none";
-    setRoleMode(true);
-  } else {
-    loginError.style.display = "block";
-    loginInput.value = "";
-    loginInput.focus();
-  }
-});
-
-const initialSessionRole = sessionStorage.getItem("oee_session_role");
-if (initialSessionRole === "manager") {
-  setRoleMode(true);
-} else if (initialSessionRole === "visitor") {
-  setRoleMode(false);
-} else {
-  if (welcomeGate) welcomeGate.classList.add("open");
+try {
+  initManagerQC(() => calculateAndRender());
+} catch (err) {
+  console.error("initManagerQC error:", err);
 }
 
-// 1. ระบบสลับแท็บเมนูในโหมดผู้จัดการ
-document.querySelectorAll("#managerNavTabs .tab-btn").forEach(btn => {
-  btn.addEventListener("click", () => {
-    if (!isManagerAuthenticated) return;
-    document.querySelectorAll("#managerNavTabs .tab-btn").forEach(b => b.classList.remove("active"));
-    document.querySelectorAll(".page-section").forEach(sec => sec.classList.remove("active"));
-    btn.classList.add("active");
-    document.getElementById(btn.dataset.target).classList.add("active");
-    requestAnimationFrame(() => calculateAndRender());
-  });
-});
+// เชื่อมฟังก์ชันวาดหน้าจอเข้ากับตัวควบคุม UI หลักใน index.html
+if (window.OEE_UI) {
+  window.OEE_UI.onRender = () => calculateAndRender();
+}
 
 // =========================================================
-// 2. ระบบเชื่อมต่อ Firebase + ปลุกการเชื่อมต่ออัตโนมัติเวลารีเฟรช
+// 1. ระบบเชื่อมต่อ Firebase + ปลุกการเชื่อมต่ออัตโนมัติเวลารีเฟรช
 // =========================================================
 const statusEl = document.getElementById("firebaseStatus");
 let isFirebaseConnected = false;
@@ -265,6 +144,11 @@ onValue(
         managerPin: String(s.managerPin || "1234"),
         googleSheetUrl: String(s.googleSheetUrl || "")
       };
+
+      if (window.OEE_UI) {
+        window.OEE_UI.managerPin = state.settings.managerPin;
+      }
+
       updateAutoSheetBadge(
         state.settings.googleSheetUrl
           ? "🟢 ซิงค์อัตโนมัติ: พร้อมทำงาน"
@@ -333,7 +217,7 @@ onValue(
   }
 );
 
-// 3. นาฬิกาหลักทำงานทุก 0.1 วินาที
+// 2. นาฬิกาหลักทำงานทุก 0.1 วินาที
 let tickCounter = 0;
 setInterval(() => {
   const isPaused = state.machine.status === "PAUSED";
@@ -405,7 +289,7 @@ setInterval(() => {
   }
 }, 100);
 
-// 4. ปุ่มควบคุมเครื่องจักร: Start / Stop / Pause
+// 3. ปุ่มควบคุมเครื่องจักร: Start / Stop / Pause
 document.getElementById("btnStartMachine").addEventListener("click", () => {
   if (s1AccumulatedMs > 0 && s1SegmentStart === null) s1SegmentStart = Date.now();
   if (s2AccumulatedMs > 0 && s2SegmentStart === null) s2SegmentStart = Date.now();
@@ -454,7 +338,7 @@ document.getElementById("btnPauseSystem").addEventListener("click", () => {
 });
 
 // =========================================================
-// 5. ฟังก์ชันทำงานอัตโนมัติเมื่อรับสัญญาณ Sensor 1 -> 2 -> 3
+// 4. ฟังก์ชันทำงานอัตโนมัติเมื่อรับสัญญาณ Sensor 1 -> 2 -> 3
 // =========================================================
 function triggerSensor1() {
   if (expectedSensor !== 1) return;
@@ -565,7 +449,7 @@ function resetCycleState() {
   document.getElementById("statusTimerS2").textContent = "รอวัตถุออกจาก Sensor 2...";
 }
 
-// 6. หน้า Setting (ผู้จัดการ)
+// 5. หน้า Setting (ผู้จัดการ)
 document.getElementById("btnSaveSettings").addEventListener("click", () => {
   const std1 = Number(document.getElementById("inputStdS1").value);
   const lsl1 = Number(document.getElementById("inputLslS1").value);
@@ -644,7 +528,7 @@ document.getElementById("btnResetAllData").addEventListener("click", () => {
   });
 });
 
-// 7. คำนวณสูตร OEE และอัปเดตหน้าจอทั้งหมด
+// 6. คำนวณสูตร OEE และอัปเดตหน้าจอทั้งหมด
 function calculateAndRender() {
   const stateText = document.getElementById("machineStateText");
   const btnStart = document.getElementById("btnStartMachine");
@@ -818,21 +702,34 @@ function calculateAndRender() {
     });
   }
 
-  renderQC(state.parts, partsList, qualityS1, qualityS2, qualityTotal, counts);
-  updateDashboardCharts(partsList, state.settings, {
-    availability,
-    perfS1,
-    perfS2,
-    perfTotal,
-    qualityS1,
-    qualityS2,
-    qualityTotal,
-    oeeS1,
-    oeeS2,
-    oeeTotal
-  });
+  try {
+    renderQC(state.parts, partsList, qualityS1, qualityS2, qualityTotal, counts);
+  } catch (err) {
+    console.error("renderQC error:", err);
+  }
 
-  renderManagerQC(partsList, state.settings);
+  try {
+    updateDashboardCharts(partsList, state.settings, {
+      availability,
+      perfS1,
+      perfS2,
+      perfTotal,
+      qualityS1,
+      qualityS2,
+      qualityTotal,
+      oeeS1,
+      oeeS2,
+      oeeTotal
+    });
+  } catch (err) {
+    console.error("updateDashboardCharts error:", err);
+  }
+
+  try {
+    renderManagerQC(partsList, state.settings);
+  } catch (err) {
+    console.error("renderManagerQC error:", err);
+  }
 }
 
 // วาดกราฟใหม่ทันทีเมื่อหมุนหน้าจอหรือย่อขยายหน้าต่างเบราว์เซอร์
@@ -845,7 +742,7 @@ window.addEventListener("resize", () => {
 });
 
 // =========================================================
-// 8. ระบบเชื่อมต่อบอร์ด Arduino (Baud 115200 | โปรโตคอล EVT,...)
+// 7. ระบบเชื่อมต่อบอร์ด Arduino (Baud 115200 | โปรโตคอล EVT,...)
 // =========================================================
 let isInitialTriggerLoad = true;
 let lastFirebaseTriggerTs = null;
@@ -1003,7 +900,7 @@ onValue(ref(db, "cnc_oee_project/arduino_trigger"), (snapshot) => {
 });
 
 // =========================================================
-// 9. ระบบซิงค์ข้อมูล + ลิงก์รูปลง Google Sheets อัตโนมัติ
+// 8. ระบบซิงค์ข้อมูล + ลิงก์รูปลง Google Sheets อัตโนมัติ
 // =========================================================
 let isSyncingSheet = false;
 let pendingSheetSync = false;
