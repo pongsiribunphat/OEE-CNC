@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="th" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OEE-CNC | 2-Station Monitoring System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- =========================================================
+       เลเยอร์ตกแต่งพื้นหลัง 3D FUTURISTIC / TECHNICAL HUD
+       (pointer-events: none ไม่บังการคลิกปุ่มหรือช่องกรอกข้อมูล)
+  ========================================================== -->
+  <div id="futuristicHudLayer" class="hud-bg-stage" aria-hidden="true">
+    <!-- 1. แสงเรืองแสงติดตามเมาส์ -->
+    <div id="hudCursorGlow" class="hud-cursor-glow"></div>
+
+    <!-- 2. รูปทรงโค้งมนสีดำเงาแบบ 3D Organic Liquid Sculpture -->
+    <div id="hudSculptureWrap" class="hud-sculpture-wrap">
+      <svg class="hud-sculpture-svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
+        <defs>
+          <!-- เฉดแสงเงาสะท้อนบนพื้นผิวสีดำเงา 3D -->
+          <linearGradient id="obsidianRimLeft" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#383c47" stop-opacity="0.72" />
+            <stop offset="22%" stop-color="#171920" stop-opacity="0.95" />
+            <stop offset="58%" stop-color="#07080b" stop-opacity="0.98" />
+            <stop offset="85%" stop-color="#1e222b" stop-opacity="0.85" />
+            <stop offset="100%" stop-color="#050507" stop-opacity="0.98" />
+          </linearGradient>
+
+          <linearGradient id="obsidianRimRight" x1="100%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#404552" stop-opacity="0.75" />
+            <stop offset="28%" stop-color="#14161c" stop-opacity="0.96" />
+            <stop offset="65%" stop-color="#060709" stop-opacity="0.99" />
+            <stop offset="90%" stop-color="#252934" stop-opacity="0.8" />
+            <stop offset="100%" stop-color="#050507" stop-opacity="0.98" />
+          </linearGradient>
+
+          <linearGradient id="specularHighlight" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0" />
+            <stop offset="50%" stop-color="#94a3b8" stop-opacity="0.22" />
+            <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+          </linearGradient>
+
+          <filter id="sculptureDepth" x="-15%" y="-15%" width="130%" height="130%">
+            <feDropShadow dx="0" dy="24" stdDeviation="28" flood-color="#000000" flood-opacity="0.92" />
+          </filter>
+        </defs>
+
+        <!-- โครงสร้างโค้งมน 3D ฝั่งซ้าย -->
+        <g filter="url(#sculptureDepth)">
+          <path d="M-120,-60 C160,60 280,220 220,410 C165,585 -40,670 -110,940 L-220,940 L-220,-80 Z"
+                fill="url(#obsidianRimLeft)" />
+          <path d="M-80,170 C190,145 360,260 445,450 C525,630 430,820 330,960 L215,960 C310,790 385,620 315,470 C245,320 105,245 -90,265 Z"
+                fill="url(#obsidianRimLeft)" />
+          <!-- เส้นไฮไลต์แสงสะท้อนขอบ -->
+          <path d="M-75,175 C190,150 355,265 440,450 C518,625 425,815 325,955"
+                fill="none" stroke="url(#specularHighlight)" stroke-width="3" />
+        </g>
+
+        <!-- โครงสร้างโค้งมน 3D ฝั่งขวา -->
+        <g filter="url(#sculptureDepth)">
+          <path d="M1540,-80 C1340,140 1180,320 1040,560 C910,780 860,890 820,980 L965,980 C1020,865 1110,715 1235,515 C1355,325 1475,185 1580,75 Z"
+                fill="url(#obsidianRimRight)" />
+          <path d="M1520,250 C1320,380 1235,575 1280,790 C1305,895 1350,950 1390,990 L1560,990 Z"
+                fill="url(#obsidianRimRight)" />
+          <!-- เส้นไฮไลต์แสงสะท้อนขอบฝั่งขวา -->
+          <path d="M1535,-70 C1335,148 1175,328 1035,568 C908,785 860,890 822,975"
+                fill="none" stroke="url(#specularHighlight)" stroke-width="3" />
+        </g>
+      </svg>
+    </div>
+
+    <!-- 3. แกนกลาง Technical HUD: วงโคจร Atomic Orbital Rings + ลูกบาศก์ 3D เรืองแสงสีน้ำเงิน/ไซยาน -->
+    <div id="hudOrbitalCore" class="hud-orbital-core">
+      <div class="hud-core-ambient-glow"></div>
+      <svg class="hud-orbital-svg" viewBox="0 0 640 640">
+        <defs>
+          <!-- เฉดสีลูกบาศก์ 3D Cobalt / Cyan -->
+          <linearGradient id="cubeTopGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#93c5fd" />
+            <stop offset="55%" stop-color="#38bdf8" />
+            <stop offset="100%" stop-color="#1d4ed8" />
+          </linearGradient>
+          <linearGradient id="cubeLeftGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#2563eb" stop-opacity="0.92" />
+            <stop offset="100%" stop-color="#0f172a" stop-opacity="0.96" />
+          </linearGradient>
+          <linearGradient id="cubeRightGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#3b82f6" stop-opacity="0.95" />
+            <stop offset="100%" stop-color="#1e3a8a" stop-opacity="0.96" />
+          </linearGradient>
+          <radialGradient id="cubeCoreGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#e0f2fe" stop-opacity="0.95" />
+            <stop offset="45%" stop-color="#38bdf8" stop-opacity="0.55" />
+            <stop offset="100%" stop-color="#1d4ed8" stop-opacity="0" />
+          </radialGradient>
+          <filter id="neonBlueBlur" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="12" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        <!-- เส้นแกนอ้างอิงแนวตั้งแบบ Technical Crosshair -->
+        <line x1="320" y1="36" x2="320" y2="604" stroke="rgba(255,255,255,0.14)" stroke-width="1" stroke-dasharray="4 6" />
+        <line x1="60" y1="320" x2="580" y2="320" stroke="rgba(56,189,248,0.1)" stroke-width="1" stroke-dasharray="3 8" />
+
+        <!-- วงโคจรที่ 1 (แนวตั้งเรียวยาว) -->
+        <g class="orbit-ring-group orbit-slow-cw">
+          <ellipse cx="320" cy="320" rx="108" ry="268"
+                   fill="none" stroke="rgba(255,255,255,0.34)" stroke-width="1.15" />
+          <circle cx="320" cy="52" r="3" fill="#38bdf8" />
+        </g>
+
+        <!-- วงโคจรที่ 2 (เอียง +58 องศา) -->
+        <g class="orbit-ring-group orbit-med-ccw">
+          <ellipse cx="320" cy="320" rx="108" ry="268"
+                   transform="rotate(58 320 320)"
+                   fill="none" stroke="rgba(255,255,255,0.28)" stroke-width="1.1" />
+          <circle cx="547" cy="178" r="2.5" fill="#93c5fd" />
+        </g>
+
+        <!-- วงโคจรที่ 3 (เอียง -58 องศา) -->
+        <g class="orbit-ring-group orbit-slow-ccw">
+          <ellipse cx="320" cy="320" rx="108" ry="268"
+                   transform="rotate(-58 320 320)"
+                   fill="none" stroke="rgba(255,255,255,0.28)" stroke-width="1.1" />
+          <circle cx="93" cy="462" r="2.5" fill="#38bdf8" />
+        </g>
+
+        <!-- ตัวอักษร HUD เล็กๆ รอบวงโคจร -->
+        <g fill="rgba(255,255,255,0.42)" font-family="'Space Mono', monospace" font-size="10" text-anchor="middle">
+          <text x="235" y="165">O</text>
+          <text x="405" y="165">E</text>
+          <text x="155" y="324">S1</text>
+          <text x="485" y="324">S2</text>
+          <text x="235" y="485">01</text>
+          <text x="405" y="485">02</text>
+        </g>
+
+        <!-- ลูกบาศก์ Isometric 3D เรืองแสงสีน้ำเงิน/ไซยานตรงกลาง -->
+        <g class="hud-center-cube" filter="url(#neonBlueBlur)">
+          <!-- แสงฟุ้งด้านหลังลูกบาศก์ -->
+          <circle cx="320" cy="320" r="78" fill="url(#cubeCoreGlow)" />
+
+          <!-- ด้านซ้ายของลูกบาศก์ -->
+          <polygon points="320,320 268,290 268,350 320,380"
+                   fill="url(#cubeLeftGrad)" stroke="rgba(147,197,253,0.7)" stroke-width="1.2" />
+          <!-- ด้านขวาของลูกบาศก์ -->
+          <polygon points="320,320 372,290 372,350 320,380"
+                   fill="url(#cubeRightGrad)" stroke="rgba(147,197,253,0.75)" stroke-width="1.2" />
+          <!-- ด้านบนของลูกบาศก์ -->
+          <polygon points="320,260 372,290 320,320 268,290"
+                   fill="url(#cubeTopGrad)" stroke="#e0f2fe" stroke-width="1.3" />
+
+          <!-- แกนแสงสว่างภายในลูกบาศก์ -->
+          <circle cx="320" cy="320" r="22" fill="url(#cubeCoreGlow)" />
+
+          <!-- สัญลักษณ์ OEE บนหน้าตัดลูกบาศก์ -->
+          <text x="320" y="294" fill="#ffffff" font-family="'JetBrains Mono', monospace" font-weight="800" font-size="11" text-anchor="middle" letter-spacing="1.5">OEE</text>
+        </g>
+      </svg>
+    </div>
+
+    <!-- 4. เลเยอร์ฝุ่นละออง 3D และ Grain Texture -->
+    <canvas id="hudDustCanvas" class="hud-dust-canvas"></canvas>
+    <div class="hud-grain-overlay"></div>
+
+    <!-- 5. กรอบข้อมูลมุมจอ Technical HUD -->
+    <div class="hud-corner-frame">
+      <div class="hud-corner-tl">
+        <span class="hud-code-tag">OEE-CNC // ADAPTIVE TELEMETRY</span>
+        <span class="hud-code-sub">DUAL-STATION PRODUCTION CORE</span>
+      </div>
+      <div class="hud-corner-tr hide-mobile">
+        <span class="hud-code-tag">REALTIME OEE ENGINE</span>
+        <span class="hud-code-sub">AVAILABILITY • PERFORMANCE • QUALITY</span>
+      </div>
+      <div class="hud-corner-bl hide-mobile">
+        <span>SYS.HUD // 01</span>
+      </div>
+      <div class="hud-corner-br hide-mobile">
+        <span>SMART LINE // ACTIVE</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       หน้าต่างเลือกบทบาทก่อนเข้าใช้งาน (ผู้เข้าชม vs ผู้จัดการ)
+  =========================================== -->
+  <div id="welcomeRoleGate" class="welcome-gate-backdrop open">
+    <div class="welcome-gate-card">
+      <div class="welcome-gate-badge">
+        <span class="brand-dot"></span>
+        <span>OEE-CNC SMART PRODUCTION LINE</span>
+      </div>
+      <h1 class="welcome-gate-title">ยินดีต้อนรับสู่ระบบติดตามผล OEE</h1>
+      <p class="welcome-gate-sub">กรุณาเลือกสถานะผู้ใช้งานก่อนเข้าสู่ระบบ</p>
+
+      <div class="welcome-role-grid">
+        <button type="button" id="btnChooseVisitor" class="role-select-card">
+          <div>
+            <div class="role-card-icon">👀</div>
+            <div class="role-card-title">ผู้เข้าชม / พนักงาน</div>
+            <p class="role-card-desc">
+              เข้าดูรายการผลิต บันทึกตรวจสอบคุณภาพชิ้นงาน (ค่า Q) แยก Station 1 - 2 และแนบรูปภาพหลักฐาน (ไม่ต้องใช้รหัสผ่าน)
+            </p>
+          </div>
+          <span class="role-card-cta cta-visitor">เข้าสู่ระบบในฐานะผู้เข้าชม ➔</span>
+        </button>
+
+        <button type="button" id="btnChooseManager" class="role-select-card manager-card">
+          <div>
+            <div class="role-card-icon">👔</div>
+            <div class="role-card-title">ผู้จัดการ (Manager)</div>
+            <p class="role-card-desc">
+              ควบคุมเครื่องจักร เชื่อมต่อ Arduino ดูกราฟ OEE ตั้งค่าเวลามาตรฐาน USL/LSL และดู QC Control Chart (ต้องใช้รหัสผ่าน)
+            </p>
+          </div>
+          <span class="role-card-cta cta-manager">🔒 เข้าสู่ระบบผู้จัดการ ➔</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- แถบเมนูนำทางด้านบน -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <div class="nav-left">
+        <div class="brand">
+          <span class="brand-dot"></span>
+          <span>OEE-CNC</span>
+          <span id="roleBadge" class="role-badge role-operator">👀 ผู้เข้าชม / พนักงาน</span>
+        </div>
+      </div>
+
+      <!-- แถบเมนูสำหรับโหมดผู้เข้าชม / พนักงาน -->
+      <div id="operatorNavTabs" class="nav-tabs" role="tablist">
+        <button class="tab-btn active" data-target="page-qc">📋 บันทึกตรวจสอบคุณภาพ (ค่า Q)</button>
+      </div>
+
+      <!-- แถบเมนูสำหรับโหมดผู้จัดการ -->
+      <div id="managerNavTabs" class="nav-tabs" role="tablist" style="display: none;">
+        <button class="tab-btn active" data-target="page-dashboard">1. Dashboard & เซ็นเซอร์</button>
+        <button class="tab-btn" data-target="page-settings">2. ตั้งค่ามาตรฐาน (Setting)</button>
+        <button class="tab-btn" data-target="page-manager-qc">3. QC Control Chart</button>
+      </div>
+
+      <div class="nav-right">
+        <div id="firebaseStatus" class="status-pill">กำลังเชื่อมต่อ...</div>
+
+        <!-- ปุ่มเลือกบทบาทปุ่มเดียว -->
+        <button type="button" id="btnOpenRoleGate" class="btn btn-outline-primary btn-sm" title="เปลี่ยนบทบาทผู้ใช้งาน">
+          🔄 เลือกบทบาท
+        </button>
+
+        <button type="button" id="btnThemeToggle" class="theme-toggle-btn" title="สลับโหมดมืด / โหมดสว่าง">
+          <span id="themeIcon">☀️</span>
+          <span id="themeText" class="hide-mobile">โหมดสว่าง</span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <main class="container">
+
+    <!-- ==========================================
+         หน้าของผู้เข้าชม / พนักงาน: ตรวจสอบคุณภาพ (ค่า Q)
+    =========================================== -->
+    <section id="page-qc" class="page-section active">
+      <div class="page-heading">
+        <h2 class="section-title">บันทึกตรวจสอบคุณภาพชิ้นงาน (สำหรับผู้เข้าชม / พนักงาน)</h2>
+        <p class="section-subtitle">เลือกหมายเลขชิ้นงาน ประเมินคุณภาพ Station 1 และ Station 2 พร้อมแนบรูปภาพหลักฐานก่อนบันทึก</p>
+      </div>
+
+      <div class="qc-top-summary">
+        <div>
+          <div class="eyebrow-label">OVERALL QUALITY SCORE (รวม 2 STATION)</div>
+          <div id="qcBigPercent" class="qc-hero-score">100.0%</div>
+          <div class="qc-sub-count">
+            ตรวจแล้วทั้งหมด: <strong id="qcTotalCount">0</strong> ชิ้น
+          </div>
+        </div>
+
+        <div class="qc-stat-pills">
+          <div class="qc-pill-box">
+            <span>Quality Station 1</span>
+            <strong id="qcAvgS1" class="text-primary">100.0%</strong>
+          </div>
+          <div class="qc-pill-box">
+            <span>Quality Station 2</span>
+            <strong id="qcAvgS2" class="text-amber">100.0%</strong>
+          </div>
+          <div class="qc-pill-box">
+            <span>0 เส้น (100%)</span>
+            <strong id="countQ100" class="text-green">0</strong>
+          </div>
+          <div class="qc-pill-box">
+            <span>1-3 เส้น (25-75%)</span>
+            <strong id="countQPartial" class="text-primary">0</strong>
+          </div>
+          <div class="qc-pill-box pill-danger">
+            <span>4 เส้น / ของเสีย</span>
+            <strong id="countQ0" class="text-red">0</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="qc-split-grid">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">รายการชิ้นงาน (แตะเลือกแถวเพื่อประเมินได้)</span>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>รหัสชิ้นงาน</th>
+                  <th>เวลา S1 / S2</th>
+                  <th>Q Station 1</th>
+                  <th>Q Station 2</th>
+                  <th>หลักฐาน</th>
+                </tr>
+              </thead>
+              <tbody id="qcPartsTableBody">
+                <tr><td colspan="5" class="empty-cell">ยังไม่มีชิ้นงานที่ผลิตเสร็จ</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card card-accent-border">
+          <div class="card-header">
+            <span class="card-title text-primary">ประเมินคุณภาพแยก Station</span>
+          </div>
+          
+          <div class="form-group">
+            <label for="qcPieceSelect">1. เลือกหมายเลขชิ้นงาน:</label>
+            <select id="qcPieceSelect">
+              <option value="">-- ยังไม่มีชิ้นงานที่ผลิตเสร็จ --</option>
+            </select>
+          </div>
+
+          <div id="qcPieceInfo" class="info-callout">
+            เลือกชิ้นงานด้านบนเพื่อดูข้อมูลเวลาผลิต
+          </div>
+
+          <div class="form-group">
+            <label class="station-qc-label">
+              <span>2.1 คุณภาพ <strong class="text-primary">Station 1</strong>:</span>
+              <span id="badgeSelectedS1" class="badge badge-100">100% (0 เส้น)</span>
+            </label>
+            <div class="criteria-grid-5" id="criteriaListS1">
+              <button type="button" class="criteria-pill selected" data-score="100" data-label="ไม่เสียหาย (0 เส้น)">
+                <strong>100%</strong>
+                <span>0 เส้น</span>
+              </button>
+              <button type="button" class="criteria-pill" data-score="75" data-label="เสียหาย 1 เส้น">
+                <strong>75%</strong>
+                <span>1 เส้น</span>
+              </button>
+              <button type="button" class="criteria-pill" data-score="50" data-label="เสียหาย 2 เส้น">
+                <strong>50%</strong>
+                <span>2 เส้น</span>
+              </button>
+              <button type="button" class="criteria-pill" data-score="25" data-label="เสียหาย 3 เส้น">
+                <strong>25%</strong>
+                <span>3 เส้น</span>
+              </button>
+              <button type="button" class="criteria-pill" data-score="0" data-label="ของเสีย (4 เส้น)">
+                <strong>0%</strong>
+                <span>4 เส้น</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="station-qc-label">
+              <span>2.2 คุณภาพ <strong class="text-amber">Station 2</strong>:</span>
+              <span id="badgeSelectedS2" class="badge badge-100">100% (0 เส้น)</span>
+            </label>
+            <div class="criteria-grid-5" id="criteriaListS2">
+              <button type="button" class="criteria-pill selected" data-score="100" data-label="ไม่เสียหาย (0 เส้น)">
+                <strong>100%</strong>
+                <span>0 เส้น</span>
+              </button>
+              <button type="button" class="criteria-pill" data-score="75" data-label="เสียหาย 1 เส้น">
+                <strong>75%</strong>
+                <span>1 เส้น</span>
+              </button>
+              <button type="button" class="criteria-pill" data-score="50" data-label="เสียหาย 2 เส้น">
+                <strong>50%</strong>
+                <span>2 เส้น</span>
+              </button>
+              <button type="button" class="criteria-pill" data-score="25" data-label="เสียหาย 3 เส้น">
+                <strong>25%</strong>
+                <span>3 เส้น</span>
+              </button>
+              <button type="button" class="criteria-pill" data-score="0" data-label="ของเสีย (4 เส้น)">
+                <strong>0%</strong>
+                <span>4 เส้น</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="qcImageInput">
+              3. แนบรูปภาพหลักฐานชิ้นงาน <span class="required-tag">* จำเป็นต้องแนบ</span>
+            </label>
+            <label for="qcImageInput" class="upload-dropzone" id="qcUploadZone">
+              <span class="upload-icon">📷</span>
+              <span class="upload-main-text">แตะเพื่อถ่ายรูป หรือ เลือกรูปภาพหลักฐาน</span>
+              <small class="upload-sub-text">รองรับไฟล์ภาพ JPG, PNG, WEBP (บีบอัดอัตโนมัติ)</small>
+            </label>
+            <input type="file" id="qcImageInput" accept="image/*" style="display: none;" />
+
+            <div id="qcImagePreviewWrap" class="image-preview-box" style="display: none;">
+              <img id="qcImagePreview" src="" alt="ตัวอย่างรูปหลักฐาน" />
+              <div class="image-preview-footer">
+                <span id="qcImageStatus" class="text-green">✓ พร้อมบันทึกหลักฐาน</span>
+                <button type="button" id="btnClearQcImage" class="btn btn-red btn-sm">✕ ลบรูป / ถ่ายใหม่</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="qcCustomNote">4. บันทึกหมายเหตุเพิ่มเติม (ถ้ามี):</label>
+            <input type="text" id="qcCustomNote" placeholder="ระบุรายละเอียดเพิ่มเติม (ไม่บังคับ)..." />
+          </div>
+
+          <button id="btnSaveQC" class="btn btn-blue" style="width: 100%;">💾 บันทึกค่า Q (S1 & S2) + รูปหลักฐาน</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         หน้าของผู้จัดการ 1: DASHBOARD & ARDUINO
+    =========================================== -->
+    <section id="page-dashboard" class="page-section">
+      
+      <div class="machine-bar">
+        <div class="machine-info-col">
+          <div class="machine-header-row">
+            <span class="eyebrow-label">MANAGER VIEW • MACHINE CONTROL & STATUS</span>
+            <h2 id="machineStateText">สถานะ: หยุดระบบ (พร้อมเริ่มงาน)</h2>
+          </div>
+
+          <div class="time-stats">
+            <div class="stat-chip">
+              <span class="chip-dot dot-green"></span>
+              <span>Run: <strong id="displayRunTime" class="text-green">0</strong> วิ</span>
+            </div>
+            <div class="stat-chip">
+              <span class="chip-dot dot-amber"></span>
+              <span>Setup: <strong id="displaySetupTime" class="text-amber">0</strong> วิ</span>
+            </div>
+            <div class="stat-chip">
+              <span class="chip-dot dot-red"></span>
+              <span>Breakdown: <strong id="displayBreakdownTime" class="text-red">0</strong> วิ</span>
+            </div>
+            <div class="stat-chip">
+              <span>ผลิตเสร็จทั้งหมด: <strong id="displayTotalParts">0</strong> ชิ้น</span>
+            </div>
+          </div>
+
+          <div id="idleMonitorText" class="idle-monitor">
+            รอชิ้นงานออก S1: 0 วิ (ยังไม่นับ OEE | Setup > 15 วิ / Breakdown > 30 วิ)
+          </div>
+        </div>
+
+        <div class="machine-action-col">
+          <div class="status-lamps">
+            <div class="lamp-item">
+              <div id="lampGreen" class="lamp-bulb lamp-green"></div>
+              <span>RUNNING</span>
+            </div>
+            <div class="lamp-divider"></div>
+            <div class="lamp-item">
+              <div id="lampYellow" class="lamp-bulb lamp-yellow"></div>
+              <span>SETUP</span>
+            </div>
+            <div class="lamp-divider"></div>
+            <div class="lamp-item">
+              <div id="lampRed" class="lamp-bulb lamp-red"></div>
+              <span>BREAKDOWN</span>
+            </div>
+          </div>
+
+          <div class="machine-controls">
+            <button id="btnStartMachine" class="btn btn-green">▶ เดินเครื่อง (Start)</button>
+            <button id="btnStopMachine" class="btn btn-red" disabled>■ หยุดเครื่อง (Breakdown)</button>
+            <button id="btnPauseSystem" class="btn btn-amber" disabled>⏸ หยุดระบบ (ไม่ลด OEE)</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="event-counter-grid">
+        <div class="event-box event-normal">
+          <div>
+            <div class="event-label">ทำงานปกติ (ไม่สะดุด)</div>
+            <div class="event-sub">ผลิตต่อเนื่องไม่มีการหยุดคั่น</div>
+          </div>
+          <div class="event-value"><span id="displayNormalParts">0</span> <small>ชิ้น</small></div>
+        </div>
+        <div class="event-box event-setup">
+          <div>
+            <div class="event-label">เกิด Setup ทั้งหมด</div>
+            <div class="event-sub">เกินเวลาเตรียมงานที่กำหนด</div>
+          </div>
+          <div class="event-value"><span id="displaySetupCount">0</span> <small>รอบ</small></div>
+        </div>
+        <div class="event-box event-breakdown">
+          <div>
+            <div class="event-label">เกิด Breakdown ทั้งหมด</div>
+            <div class="event-sub">หยุดเครื่องหรือรอนานเกินกำหนด</div>
+          </div>
+          <div class="event-value"><span id="displayBreakdownCount">0</span> <small>รอบ</small></div>
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="card oee-card">
+          <div class="card-header">
+            <span class="card-title">Station 1 OEE</span>
+            <span id="stdTimeLabel1" class="std-badge">มาตรฐาน: 10 วิ</span>
+          </div>
+          <div id="oeeS1" class="oee-big">0.0%</div>
+          <div class="apq-row">
+            <div class="apq-item"><span>Availability</span><strong id="aS1">0%</strong></div>
+            <div class="apq-item"><span>Performance</span><strong id="pS1">0%</strong></div>
+            <div class="apq-item"><span>Quality (S1)</span><strong id="qS1">100%</strong></div>
+          </div>
+          <button type="button" id="btnDetailS1" class="btn btn-outline-primary card-action-btn">
+            🔍 ดูรายละเอียด Station 1
+          </button>
+        </div>
+
+        <div class="card oee-card">
+          <div class="card-header">
+            <span class="card-title">Station 2 OEE</span>
+            <span id="stdTimeLabel2" class="std-badge">มาตรฐาน: 12 วิ</span>
+          </div>
+          <div id="oeeS2" class="oee-big">0.0%</div>
+          <div class="apq-row">
+            <div class="apq-item"><span>Availability</span><strong id="aS2">0%</strong></div>
+            <div class="apq-item"><span>Performance</span><strong id="pS2">0%</strong></div>
+            <div class="apq-item"><span>Quality (S2)</span><strong id="qS2">100%</strong></div>
+          </div>
+          <button type="button" id="btnDetailS2" class="btn btn-outline-primary card-action-btn">
+            🔍 ดูรายละเอียด Station 2
+          </button>
+        </div>
+
+        <div class="card oee-card oee-card-featured">
+          <div class="card-header">
+            <span class="card-title text-primary">ภาพรวมทั้งสายการผลิต</span>
+            <span id="goodPartsSummary" class="std-badge">Q1: 100% | Q2: 100%</span>
+          </div>
+          <div id="oeeTotal" class="oee-big text-green">0.0%</div>
+          <div class="apq-row">
+            <div class="apq-item"><span>Availability</span><strong id="aTotal">0%</strong></div>
+            <div class="apq-item"><span>Performance</span><strong id="pTotal">0%</strong></div>
+            <div class="apq-item"><span>Quality รวม</span><strong id="qTotal">100%</strong></div>
+          </div>
+          <div class="card-footnote">
+            คำนวณจากเวลาและคุณภาพรวมทั้ง 2 สถานี
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">เปรียบเทียบ OEE & A-P-Q (รวม vs แยก Station)</span>
+          </div>
+          <div class="chart-legend">
+            <span><i style="background:#22c55e;"></i> ภาพรวมทั้งไลน์</span>
+            <span><i style="background:#0ea5e9;"></i> Station 1</span>
+            <span><i style="background:#f59e0b;"></i> Station 2</span>
+          </div>
+          <div class="chart-box">
+            <canvas id="oeeCompareChart"></canvas>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">แนวโน้ม OEE รายชิ้นงาน (รวม / Station 1 / Station 2)</span>
+          </div>
+          <div class="chart-legend">
+            <span><i style="background:#22c55e;"></i> OEE รวม</span>
+            <span><i style="background:#0ea5e9;"></i> OEE Station 1</span>
+            <span><i style="background:#f59e0b;"></i> OEE Station 2</span>
+          </div>
+          <div class="chart-box">
+            <canvas id="oeeTrendChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card timer-card">
+          <div class="card-header">
+            <span class="card-title">เวลาทำงานปัจจุบัน: Station 1</span>
+            <span class="live-dot">LIVE</span>
+          </div>
+          <div id="liveTimerS1" class="timer-display">0.00 วินาที</div>
+          <div id="statusTimerS1" class="timer-status">รอวัตถุออกจาก Sensor 1...</div>
+        </div>
+
+        <div class="card timer-card">
+          <div class="card-header">
+            <span class="card-title">เวลาทำงานปัจจุบัน: Station 2</span>
+            <span class="live-dot">LIVE</span>
+          </div>
+          <div id="liveTimerS2" class="timer-display">0.00 วินาที</div>
+          <div id="statusTimerS2" class="timer-status">รอวัตถุออกจาก Sensor 2...</div>
+        </div>
+      </div>
+
+      <div class="card simulator-card">
+        <div class="card-header" style="flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
+          <span class="card-title text-amber">เชื่อมต่อบอร์ด Arduino (รับสัญญาณเซ็นเซอร์ 1 ➔ 2 ➔ 3 อัตโนมัติ)</span>
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <span id="arduinoStatusBadge" class="std-badge">🔌 ยังไม่ได้เชื่อมต่อบอร์ด</span>
+            <button type="button" id="btnConnectArduino" class="btn btn-blue btn-sm">
+              🔌 เชื่อมต่อ Arduino (USB)
+            </button>
+          </div>
+        </div>
+        <div id="arduinoSerialLog" class="idle-monitor" style="width: 100%;">
+          สถานะเซ็นเซอร์: รอรับสัญญาณ Sensor 1 จากบอร์ด Arduino...
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header" style="flex-wrap: wrap; gap: 10px;">
+          <span class="card-title">รายการชิ้นงานที่ผลิตเสร็จล่าสุด (พร้อมรูปหลักฐานจากพนักงาน)</span>
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            <span id="autoSheetStatus" class="std-badge">☁️ ซิงค์อัตโนมัติ: รอตั้งค่า URL</span>
+            <button type="button" id="btnExportGoogleSheet" class="btn btn-green btn-sm">
+              🔄 ซิงค์ลง Sheets ตอนนี้
+            </button>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>รหัสชิ้นงาน</th>
+                <th>เวลาโลกจริงที่บันทึก</th>
+                <th>Station 1 (วิ)</th>
+                <th>Station 2 (วิ)</th>
+                <th>เวลารวม (วิ)</th>
+                <th>คุณภาพ Station 1</th>
+                <th>คุณภาพ Station 2</th>
+                <th>หลักฐานรูป</th>
+                <th>หมายเหตุ Q</th>
+              </tr>
+            </thead>
+            <tbody id="partsTableBody">
+              <tr><td colspan="9" class="empty-cell">ยังไม่มีข้อมูลการผลิต</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         หน้าของผู้จัดการ 2: ตั้งค่าเวลามาตรฐาน, USL/LSL & Google Sheets
+    =========================================== -->
+    <section id="page-settings" class="page-section">
+      <div class="page-heading">
+        <h2 class="section-title">ตั้งค่าเวลามาตรฐาน สเปก QC (USL/LSL) และสิทธิ์ผู้จัดการ</h2>
+        <p class="section-subtitle">กำหนดเป้าหมาย Ideal Cycle Time ขอบเขตเวลา USL/LSL เกณฑ์เปลี่ยนสถานะ รหัสผ่าน และลิงก์ Google Sheets</p>
+      </div>
+      
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">1. เวลามาตรฐาน & ขอบเขตสเปก QC (USL / LSL)</span>
+          </div>
+          
+          <div class="form-group">
+            <label for="inputStdS1">เวลามาตรฐาน Station 1 (วินาที / ชิ้น):</label>
+            <input type="number" id="inputStdS1" step="0.1" min="0.1" value="10" />
+          </div>
+
+          <div class="grid-2" style="margin-bottom: 12px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="inputLslS1">LSL Station 1 (ต่ำสุด - วิ):</label>
+              <input type="number" id="inputLslS1" step="0.1" min="0" value="8" />
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="inputUslS1">USL Station 1 (สูงสุด - วิ):</label>
+              <input type="number" id="inputUslS1" step="0.1" min="0.1" value="12" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="inputStdS2">เวลามาตรฐาน Station 2 (วินาที / ชิ้น):</label>
+            <input type="number" id="inputStdS2" step="0.1" min="0.1" value="12" />
+          </div>
+
+          <div class="grid-2" style="margin-bottom: 12px;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="inputLslS2">LSL Station 2 (ต่ำสุด - วิ):</label>
+              <input type="number" id="inputLslS2" step="0.1" min="0" value="10" />
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="inputUslS2">USL Station 2 (สูงสุด - วิ):</label>
+              <input type="number" id="inputUslS2" step="0.1" min="0.1" value="14" />
+            </div>
+          </div>
+
+          <hr class="divider" />
+
+          <div class="card-header">
+            <span class="card-title">2. เกณฑ์จับเวลาว่างหลังจบชิ้นงาน (Setup / Breakdown)</span>
+          </div>
+          
+          <div class="form-group">
+            <label for="inputSetupTime">หากไม่ออกภายในกี่วินาที ให้ถือเป็น Setup (ไฟเหลือง):</label>
+            <input type="number" id="inputSetupTime" step="1" min="1" value="15" />
+          </div>
+
+          <div class="form-group">
+            <label for="inputBreakdownTime">หากนานเกินกี่วินาที ให้ถือเป็น Breakdown (ไฟแดง):</label>
+            <input type="number" id="inputBreakdownTime" step="1" min="2" value="30" />
+          </div>
+
+          <hr class="divider" />
+
+          <div class="card-header">
+            <span class="card-title">3. รหัสผ่านเข้าโหมดผู้จัดการ (Manager PIN)</span>
+          </div>
+
+          <div class="form-group">
+            <label for="inputManagerPin">ตั้งรหัสผ่านสำหรับเข้าหน้า Dashboard และ Setting:</label>
+            <input type="text" id="inputManagerPin" maxlength="20" placeholder="ค่าเริ่มต้นคือ 1234" value="1234" />
+          </div>
+
+          <hr class="divider" />
+
+          <div class="card-header">
+            <span class="card-title">4. เชื่อมต่อ Google Sheets (ซิงค์อัตโนมัติแยก 3 Sheet + ลิงก์รูป)</span>
+          </div>
+
+          <div class="form-group">
+            <label for="inputSheetWebhook">วาง URL ของ Google Apps Script Web App (ลงท้ายด้วย /exec):</label>
+            <input type="url" id="inputSheetWebhook" placeholder="https://script.google.com/macros/s/...../exec" />
+          </div>
+
+          <button id="btnSaveSettings" class="btn btn-green" style="width: 100%;">บันทึกการตั้งค่าทั้งหมดลง Firebase</button>
+        </div>
+
+        <div class="card card-danger-border">
+          <div class="card-header">
+            <span class="card-title text-red">รีเซ็ตระบบสำหรับเริ่มการทดลองใหม่</span>
+          </div>
+          <p class="reset-desc">
+            เมื่อกดปุ่มด้านล่าง ข้อมูลเวลา Run, Setup, Breakdown จำนวนรอบที่เกิด และรายการชิ้นงานทั้งหมดจะถูกล้างเป็น 0 (ค่าเวลามาตรฐาน ค่า USL/LSL เกณฑ์ Setup/Breakdown รหัสผ่าน และลิงก์ Google Sheets จะยังคงอยู่)
+          </p>
+          <button id="btnResetAllData" class="btn btn-red" style="width: 100%;">ล้างข้อมูลการผลิตทั้งหมด (Reset)</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==========================================
+         หน้าของผู้จัดการ 3: QC CONTROL CHART (I-MR CHART)
+    =========================================== -->
+    <section id="page-manager-qc" class="page-section">
+      <div class="page-heading qc-page-header">
+        <div>
+          <h2 class="section-title">Statistical Process Control (I-MR Control Chart)</h2>
+          <p class="section-subtitle">วิเคราะห์เสถียรภาพเวลาการผลิตเทียบกับขอบเขตควบคุม (CL, UCL, LCL) และขอบเขตสเปก (USL, LSL)</p>
+        </div>
+
+        <div class="nav-tabs">
+          <button type="button" class="tab-btn active" data-qc-station="S1">Station 1</button>
+          <button type="button" class="tab-btn" data-qc-station="S2">Station 2</button>
+          <button type="button" class="tab-btn" data-qc-station="TOTAL">รวมทั้งสายการผลิต</button>
+        </div>
+      </div>
+
+      <div class="grid-3" style="margin-bottom: 16px;">
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title text-green">ขอบเขตควบคุม (Control Limits)</span>
+          </div>
+          <div class="apq-row">
+            <div class="apq-item"><span>LCL (-3σ)</span><strong id="qcStatLCL" class="text-amber">-</strong></div>
+            <div class="apq-item"><span>CL (ค่าเฉลี่ย)</span><strong id="qcStatCL" class="text-green">-</strong></div>
+            <div class="apq-item"><span>UCL (+3σ)</span><strong id="qcStatUCL" class="text-amber">-</strong></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title text-red">ขอบเขตสเปก (Spec Limits)</span>
+          </div>
+          <div class="apq-row">
+            <div class="apq-item"><span>LSL (ต่ำสุด)</span><strong id="qcStatLSL" class="text-red">-</strong></div>
+            <div class="apq-item"><span>USL (สูงสุด)</span><strong id="qcStatUSL" class="text-red">-</strong></div>
+            <div class="apq-item"><span>MR̄ / UCL_MR</span><strong><span id="qcStatMrBar">-</span> / <span id="qcStatUclMr">-</span></strong></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title text-primary">ความสามารถกระบวนการ (Capability)</span>
+          </div>
+          <div class="apq-row">
+            <div class="apq-item"><span>Cp</span><strong id="qcStatCp">-</strong></div>
+            <div class="apq-item"><span>Cpk (เป้า ≥ 1.33)</span><strong id="qcStatCpk">-</strong></div>
+          </div>
+          <div id="qcStatOutCount" class="card-footnote" style="margin-top: 8px;">
+            หลุดสเปก (USL/LSL): 0 ชิ้น | หลุดควบคุม (UCL/LCL): 0 ชิ้น
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom: 16px;">
+        <div class="card-header" style="flex-wrap: wrap; gap: 8px;">
+          <span id="mgrQcChartTitle" class="card-title">I-Chart (Individual Control Chart): เวลาผลิต Station 1</span>
+          <span id="mgrQcSpecBadge" class="std-badge">สเปกที่ตั้งไว้: LSL = 8 วิ | USL = 12 วิ</span>
+        </div>
+        <div class="chart-legend" style="flex-wrap: wrap;">
+          <span><i style="background:#0ea5e9;"></i> เวลาผลิตจริงรายชิ้น</span>
+          <span><i style="background:#22c55e;"></i> CL (ค่าเฉลี่ย)</span>
+          <span><i style="background:#f59e0b;"></i> UCL / LCL (±3σ)</span>
+          <span><i style="background:#ef4444;"></i> USL / LSL (สเปกที่ตั้งค่า)</span>
+        </div>
+        <div class="chart-box-tall">
+          <canvas id="mgrIChartCanvas"></canvas>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom: 16px;">
+        <div class="card-header">
+          <span class="card-title">MR-Chart (Moving Range Chart): ความแปรปรวนระหว่างชิ้นที่ติดกัน</span>
+        </div>
+        <div class="chart-legend">
+          <span><i style="background:#a855f7;"></i> ค่า Moving Range (|xᵢ - xᵢ₋₁|)</span>
+          <span><i style="background:#22c55e;"></i> MR̄ (ค่าเฉลี่ย MR)</span>
+          <span><i style="background:#f59e0b;"></i> UCL_MR (3.267 × MR̄)</span>
+        </div>
+        <div class="chart-box">
+          <canvas id="mgrMRChartCanvas"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">ตารางตรวจสอบสถานะ Control Chart รายชิ้น</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>รหัสชิ้นงาน</th>
+                <th>เวลาที่บันทึก</th>
+                <th>เวลาผลิตจริง</th>
+                <th>Moving Range (MR)</th>
+                <th>ช่วงสเปก (LSL - USL)</th>
+                <th>ช่วงควบคุม (LCL - UCL)</th>
+                <th>สถานะทางสถิติ</th>
+              </tr>
+            </thead>
+            <tbody id="mgrQcTableBody">
+              <tr><td colspan="7" class="empty-cell">ยังไม่มีข้อมูลชิ้นงานสำหรับสร้าง Control Chart</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Popup กรอกรหัสผ่านเข้าโหมดผู้จัดการ -->
+  <div id="managerLoginModal" class="modal-backdrop" style="z-index: 1050;">
+    <div class="modal-content" style="max-width: 420px;">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title">🔒 เข้าสู่โหมดผู้จัดการ</h3>
+          <small class="modal-sub">กรอกรหัสผ่านเพื่อเข้าดู Dashboard, Setting และ QC</small>
+        </div>
+        <button type="button" id="btnCloseLoginModal" class="btn btn-red btn-sm">✕ ปิด</button>
+      </div>
+
+      <form id="managerLoginForm">
+        <div class="form-group">
+          <label for="managerPasswordInput">รหัสผ่านผู้จัดการ:</label>
+          <input
+            type="password"
+            id="managerPasswordInput"
+            placeholder="กรอกรหัสผ่าน..."
+            autocomplete="current-password"
+            required
+          />
+          <small class="login-hint">รหัสผ่านเริ่มต้น: <strong>1234</strong> (เปลี่ยนได้ในหน้า Setting)</small>
+          <div id="managerLoginError" class="login-error" style="display: none;">
+            ❌ รหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-blue" style="width: 100%;">
+          🔓 ยืนยันเข้าสู่ระบบผู้จัดการ
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Popup ดูรายละเอียดเจาะลึกของแต่ละ Station -->
+  <div id="stationDetailModal" class="modal-backdrop">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <h3 id="modalStationTitle" class="modal-title">รายละเอียดข้อมูล Station 1</h3>
+          <small id="modalStationSubtitle" class="modal-sub">เวลามาตรฐาน: 10 วินาที/ชิ้น</small>
+        </div>
+        <button type="button" id="btnCloseModal" class="btn btn-red btn-sm">✕ ปิด</button>
+      </div>
+
+      <div class="modal-kpi-grid">
+        <div class="modal-kpi-box">
+          <span>ค่า OEE สถานีนี้</span>
+          <strong id="modalOeeVal" class="text-green">0.0%</strong>
+        </div>
+        <div class="modal-kpi-box">
+          <span>Performance (P)</span>
+          <strong id="modalPerfVal" class="text-primary">0.0%</strong>
+        </div>
+        <div class="modal-kpi-box">
+          <span>เวลาเฉลี่ยจริง / ชิ้น</span>
+          <strong id="modalAvgTime" class="text-amber">0.00 วิ</strong>
+        </div>
+        <div class="modal-kpi-box">
+          <span>เร็วสุด / ช้าสุด</span>
+          <strong id="modalMinMaxTime" style="font-size: 1.05rem;">0.0 / 0.0 วิ</strong>
+        </div>
+      </div>
+
+      <div class="card modal-chart-card">
+        <div class="card-header">
+          <span id="modalChartTitle" class="card-title">กราฟเวลาทำงานจริงรายชิ้น เทียบกับเวลามาตรฐาน (วินาที)</span>
+        </div>
+        <div class="chart-legend">
+          <span><i style="background:#0ea5e9;"></i> เวลาทำงานจริง (วิ)</span>
+          <span><i style="background:#ef4444;"></i> เส้นเวลามาตรฐาน (วิ)</span>
+        </div>
+        <div class="chart-box">
+          <canvas id="stationDetailChart"></canvas>
+        </div>
+      </div>
+
+      <div class="table-wrap" style="max-height: 280px; overflow-y: auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>รหัสชิ้นงาน</th>
+              <th>เวลาโลกจริงที่บันทึก</th>
+              <th>เวลาที่ใช้ (วิ)</th>
+              <th>A (ชิ้นนี้)</th>
+              <th>P (ชิ้นนี้)</th>
+              <th>Q (สถานีนี้)</th>
+              <th>OEE (ชิ้นนี้)</th>
+              <th>โน๊ตค่า Q</th>
+            </tr>
+          </thead>
+          <tbody id="modalPartsTableBody">
+            <tr><td colspan="8" class="empty-cell">ยังไม่มีข้อมูลชิ้นงาน</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Popup ขยายดูรูปภาพหลักฐานค่า Q -->
+  <div id="qcImageModal" class="modal-backdrop">
+    <div class="modal-content" style="max-width: 640px;">
+      <div class="modal-header">
+        <div>
+          <h3 id="qcModalTitle" class="modal-title">หลักฐานรูปภาพชิ้นงาน</h3>
+          <small id="qcModalCaption" class="modal-sub">-</small>
+        </div>
+        <button type="button" id="btnCloseQcModal" class="btn btn-red btn-sm">✕ ปิด</button>
+      </div>
+      <div class="lightbox-body">
+        <img id="qcModalImg" src="" alt="รูปหลักฐานคุณภาพ" />
+      </div>
+    </div>
+  </div>
+
+  <!-- สคริปต์ตกแต่งแอนิเมชัน 3D Parallax, Dust Particles และเอฟเฟกต์ตัวเลข (แยกอิสระจากระบบหลัก) -->
+  <script>
+    (function initFuturisticVisuals() {
+      const cursorGlow = document.getElementById("hudCursorGlow");
+      const sculptureWrap = document.getElementById("hudSculptureWrap");
+      const orbitalCore = document.getElementById("hudOrbitalCore");
+      const dustCanvas = document.getElementById("hudDustCanvas");
+
+      let targetX = window.innerWidth * 0.5;
+      let targetY = window.innerHeight * 0.5;
+      let currentX = targetX;
+      let currentY = targetY;
+
+      window.addEventListener("pointermove", (e) => {
+        targetX = e.clientX;
+        targetY = e.clientY;
+      }, { passive: true });
+
+      // ระบบฝุ่นละออง 3D และ micro-specks
+      const ctx = dustCanvas ? dustCanvas.getContext("2d") : null;
+      let particles = [];
+
+      function resizeDustCanvas() {
+        if (!dustCanvas) return;
+        dustCanvas.width = window.innerWidth;
+        dustCanvas.height = window.innerHeight;
+        const count = Math.min(75, Math.floor((dustCanvas.width * dustCanvas.height) / 22000));
+        particles = Array.from({ length: count }, () => ({
+          x: Math.random() * dustCanvas.width,
+          y: Math.random() * dustCanvas.height,
+          r: Math.random() * 1.6 + 0.4,
+          vx: (Math.random() - 0.5) * 0.18,
+          vy: (Math.random() - 0.5) * 0.18 - 0.05,
+          alpha: Math.random() * 0.45 + 0.1,
+          isCyan: Math.random() > 0.72
+        }));
+      }
+
+      if (dustCanvas && ctx) {
+        resizeDustCanvas();
+        window.addEventListener("resize", resizeDustCanvas);
+      }
+
+      function animateFrame() {
+        // หน่วงเมาส์แบบนุ่มนวล (Lerp)
+        currentX += (targetX - currentX) * 0.08;
+        currentY += (targetY - currentY) * 0.08;
+
+        if (cursorGlow) {
+          cursorGlow.style.transform = `translate3d(${currentX - 260}px, ${currentY - 260}px, 0)`;
+        }
+
+        const normX = (currentX / Math.max(1, window.innerWidth)) - 0.5;
+        const normY = (currentY / Math.max(1, window.innerHeight)) - 0.5;
+
+        if (sculptureWrap) {
+          sculptureWrap.style.transform = `translate3d(${normX * -22}px, ${normY * -16}px, 0) scale(1.03)`;
+        }
+        if (orbitalCore) {
+          orbitalCore.style.transform = `translate3d(calc(-50% + ${normX * 26}px), calc(-50% + ${normY * 22}px), 0)`;
+        }
+
+        if (dustCanvas && ctx) {
+          ctx.clearRect(0, 0, dustCanvas.width, dustCanvas.height);
+          for (let i = 0; i < particles.length; i++) {
+            const p = particles[i];
+            p.x += p.vx;
+            p.y += p.vy;
+
+            if (p.x < 0) p.x = dustCanvas.width;
+            if (p.x > dustCanvas.width) p.x = 0;
+            if (p.y < 0) p.y = dustCanvas.height;
+            if (p.y > dustCanvas.height) p.y = 0;
+
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fillStyle = p.isCyan
+              ? `rgba(56, 189, 248, ${p.alpha})`
+              : `rgba(226, 232, 240, ${p.alpha * 0.75})`;
+            ctx.fill();
+          }
+        }
+
+        requestAnimationFrame(animateFrame);
+      }
+      requestAnimationFrame(animateFrame);
+
+      // เอฟเฟกต์แสงกระพริบนุ่มๆ เมื่อตัวเลข OEE หรือค่า Q อัปเดต
+      const metricIds = ["oeeS1", "oeeS2", "oeeTotal", "qcBigPercent"];
+      metricIds.forEach((id) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        const obs = new MutationObserver(() => {
+          el.classList.remove("hud-metric-pulse");
+          void el.offsetWidth;
+          el.classList.add("hud-metric-pulse");
+        });
+        obs.observe(el, { childList: true, characterData: true, subtree: true });
+      });
+    })();
+  </script>
+
+  <script type="module" src="oee-calc.js"></script>
+</body>
+</html>
