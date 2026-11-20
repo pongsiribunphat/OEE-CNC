@@ -8,22 +8,404 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Noto+Sans+Thai:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
+  <style>
+    /* =========================================================
+       สไตล์เฉพาะส่วน DIGITAL TWIN (Dark Slate/Navy + Cyan Glow)
+    ========================================================== */
+    .dt-card {
+      position: relative;
+      background: linear-gradient(180deg, #0b1220 0%, #070c16 100%);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      border-radius: 16px;
+      padding: 18px 20px 20px;
+      margin-bottom: 18px;
+      box-shadow: 0 16px 38px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(56, 189, 248, 0.14);
+      overflow: hidden;
+      color: #f1f5f9;
+    }
+
+    .dt-card::before,
+    .dt-card::after {
+      content: "";
+      position: absolute;
+      width: 16px;
+      height: 16px;
+      pointer-events: none;
+    }
+
+    .dt-card::before {
+      top: 0;
+      left: 0;
+      border-top: 2px solid #00e5ff;
+      border-left: 2px solid #00e5ff;
+      border-top-left-radius: 16px;
+    }
+
+    .dt-card::after {
+      bottom: 0;
+      right: 0;
+      border-bottom: 2px solid #00e5ff;
+      border-right: 2px solid #00e5ff;
+      border-bottom-right-radius: 16px;
+    }
+
+    .dt-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .dt-title-group {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .dt-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: #f8fafc;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dt-subtitle {
+      font-size: 0.82rem;
+      color: #94a3b8;
+      margin: 0;
+    }
+
+    .sensor-badges-bar {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .sensor-badge {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.76rem;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(148, 163, 184, 0.28);
+      color: #94a3b8;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      transition: all 0.2s ease;
+    }
+
+    .sensor-badge .badge-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #475569;
+      transition: all 0.2s ease;
+    }
+
+    .sensor-badge.detected {
+      background: rgba(0, 229, 255, 0.15);
+      border-color: #00e5ff;
+      color: #00e5ff;
+      box-shadow: 0 0 18px rgba(0, 229, 255, 0.3);
+    }
+
+    .sensor-badge.detected .badge-dot {
+      background: #00e5ff;
+      box-shadow: 0 0 10px #00e5ff;
+      animation: dtBadgeDotBlink 0.42s infinite alternate;
+    }
+
+    @keyframes dtBadgeDotBlink {
+      from { opacity: 1; transform: scale(1.18); }
+      to { opacity: 0.35; transform: scale(0.85); }
+    }
+
+    .dt-stage-viewport {
+      position: relative;
+      width: 100%;
+      background: #060b14;
+      border: 1px solid rgba(56, 189, 248, 0.2);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: inset 0 0 42px rgba(0, 0, 0, 0.85);
+    }
+
+    .dt-svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      max-height: 390px;
+      user-select: none;
+    }
+
+    .stage-telemetry-overlay {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      pointer-events: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+    }
+
+    .telemetry-tag {
+      background: rgba(6, 11, 20, 0.86);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      color: #38bdf8;
+      padding: 4px 10px;
+      border-radius: 6px;
+      backdrop-filter: blur(4px);
+    }
+
+    /* ไฟเซนเซอร์กะพริบ + วงคลื่นแผ่ออกมา */
+    .sensor-led-core {
+      fill: #1e293b;
+      stroke: #64748b;
+      stroke-width: 1.5;
+      transition: fill 0.15s ease, stroke 0.15s ease;
+    }
+
+    .sensor-node.active .sensor-led-core {
+      fill: #00e5ff;
+      stroke: #ffffff;
+      animation: dtSensorCoreBlink 0.36s infinite alternate;
+    }
+
+    .sensor-ripple {
+      fill: none;
+      stroke: #00e5ff;
+      stroke-width: 2;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .sensor-node.active .sensor-ripple-1 {
+      animation: dtSensorRippleExpand 1.1s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+    }
+
+    .sensor-node.active .sensor-ripple-2 {
+      animation: dtSensorRippleExpand 1.1s cubic-bezier(0.16, 1, 0.3, 1) 0.52s infinite;
+    }
+
+    @keyframes dtSensorCoreBlink {
+      0% {
+        fill: #00e5ff;
+        filter: drop-shadow(0 0 8px #00e5ff);
+      }
+      100% {
+        fill: #7dd3fc;
+        filter: drop-shadow(0 0 2px #0284c7);
+      }
+    }
+
+    @keyframes dtSensorRippleExpand {
+      0% {
+        r: 7;
+        opacity: 0.95;
+        stroke-width: 2.2;
+      }
+      100% {
+        r: 34;
+        opacity: 0;
+        stroke-width: 0.5;
+      }
+    }
+
+    /* หัวเจาะ CNC เลื่อนลง / เลื่อนขึ้น */
+    .cnc-spindle-head {
+      transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .cnc-spindle-head.drilling {
+      transform: translateY(15px);
+    }
+
+    .drill-spark {
+      opacity: 0;
+      transition: opacity 0.15s ease;
+    }
+
+    .cnc-spindle-head.drilling .drill-spark {
+      opacity: 1;
+      animation: dtSparkPulse 0.2s infinite alternate;
+    }
+
+    @keyframes dtSparkPulse {
+      from { r: 2.5; opacity: 0.6; }
+      to { r: 5.5; opacity: 1; }
+    }
+
+    /* แถบปุ่มควบคุม Digital Twin */
+    .dt-controls-bar {
+      margin-top: 14px;
+      padding-top: 14px;
+      border-top: 1px solid rgba(148, 163, 184, 0.16);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .dt-control-group {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .dt-control-label {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: #94a3b8;
+      margin-right: 2px;
+    }
+
+    .btn-dt {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 8px 14px;
+      border-radius: 8px;
+      border: 1px solid rgba(56, 189, 248, 0.38);
+      background: rgba(15, 23, 42, 0.92);
+      color: #f1f5f9;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.18s ease;
+    }
+
+    .btn-dt:hover {
+      border-color: #00e5ff;
+      background: rgba(56, 189, 248, 0.14);
+      transform: translateY(-1px);
+    }
+
+    .btn-dt.btn-dt-primary {
+      background: linear-gradient(135deg, #0284c7, #00b4d8);
+      border-color: #00e5ff;
+      color: #030712;
+      box-shadow: 0 0 18px rgba(0, 229, 255, 0.28);
+    }
+
+    .btn-dt.btn-dt-primary.running {
+      background: linear-gradient(135deg, #d97706, #f59e0b);
+      border-color: #fbbf24;
+      color: #030712;
+      box-shadow: 0 0 18px rgba(245, 158, 11, 0.28);
+    }
+
+    .btn-dt.btn-dt-reset {
+      border-color: rgba(239, 68, 68, 0.45);
+      color: #fca5a5;
+    }
+
+    .btn-dt.btn-dt-reset:hover {
+      background: rgba(239, 68, 68, 0.16);
+      border-color: #ef4444;
+    }
+
+    .sensor-test-box {
+      display: inline-flex;
+      align-items: center;
+      background: rgba(6, 11, 20, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 9px;
+      padding: 3px;
+      gap: 3px;
+    }
+
+    .sensor-test-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: #38bdf8;
+      padding: 0 8px;
+    }
+
+    .btn-sensor-step {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 600;
+      padding: 5px 9px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      background: transparent;
+      color: #94a3b8;
+      transition: all 0.15s ease;
+    }
+
+    .btn-sensor-step:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #f8fafc;
+    }
+
+    .btn-sensor-step.in-btn.active {
+      background: #00e5ff;
+      color: #030712;
+      font-weight: 800;
+      box-shadow: 0 0 12px rgba(0, 229, 255, 0.45);
+    }
+
+    .btn-sensor-step.out-btn.active {
+      background: rgba(148, 163, 184, 0.22);
+      color: #f8fafc;
+    }
+
+    /* แถบปุ่มจำลองเซ็นเซอร์ OEE จริง (1 -> 2 -> 3) */
+    .sim-sensor-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .sim-sensor-bar .btn {
+      flex: 1 1 200px;
+      justify-content: center;
+      transition: all 0.2s ease;
+    }
+
+    .sim-sensor-bar .btn.sim-step-ready {
+      box-shadow: 0 0 0 2px rgba(14, 165, 233, 0.45), 0 6px 18px rgba(14, 165, 233, 0.25);
+      transform: translateY(-1px);
+    }
+
+    .sim-sensor-bar .btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+  </style>
 </head>
 <body>
 
   <!-- =========================================================
        เลเยอร์ตกแต่งพื้นหลัง 3D FUTURISTIC / TECHNICAL HUD
-       (รองรับทั้งโหมดมืด Obsidian 3D และโหมดสว่าง Pearl Ceramic 3D)
   ========================================================== -->
   <div id="futuristicHudLayer" class="hud-bg-stage" aria-hidden="true">
-    <!-- 1. แสงเรืองแสงติดตามเมาส์ -->
     <div id="hudCursorGlow" class="hud-cursor-glow"></div>
 
-    <!-- 2. รูปทรงโค้งมนแบบ 3D Organic Liquid Sculpture -->
     <div id="hudSculptureWrap" class="hud-sculpture-wrap">
       <svg class="hud-sculpture-svg" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
         <defs>
-          <!-- เฉดสีโหมดมืด (Obsidian Black Gloss 3D) -->
           <linearGradient id="obsidianRimLeft" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stop-color="#383c47" stop-opacity="0.72" />
             <stop offset="22%" stop-color="#171920" stop-opacity="0.95" />
@@ -50,7 +432,6 @@
             <feDropShadow dx="0" dy="24" stdDeviation="28" flood-color="#000000" flood-opacity="0.92" />
           </filter>
 
-          <!-- เฉดสีโหมดสว่าง (Pearl White & Frosted Silver 3D) -->
           <linearGradient id="pearlRimLeft" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stop-color="#ffffff" stop-opacity="0.96" />
             <stop offset="32%" stop-color="#e2e8f0" stop-opacity="0.92" />
@@ -78,7 +459,6 @@
           </filter>
         </defs>
 
-        <!-- ชุดประติมากรรม 3D สำหรับโหมดมืด -->
         <g class="sculpt-dark" filter="url(#sculptureDepth)">
           <path d="M-120,-60 C160,60 280,220 220,410 C165,585 -40,670 -110,940 L-220,940 L-220,-80 Z"
                 fill="url(#obsidianRimLeft)" />
@@ -95,7 +475,6 @@
                 fill="none" stroke="url(#specularHighlight)" stroke-width="3" />
         </g>
 
-        <!-- ชุดประติมากรรม 3D สำหรับโหมดสว่าง -->
         <g class="sculpt-light" filter="url(#pearlDepth)">
           <path d="M-120,-60 C160,60 280,220 220,410 C165,585 -40,670 -110,940 L-220,940 L-220,-80 Z"
                 fill="url(#pearlRimLeft)" />
@@ -114,7 +493,6 @@
       </svg>
     </div>
 
-    <!-- 3. แกนกลาง Technical HUD: วงโคจร Atomic Orbital Rings + ลูกบาศก์ 3D เรืองแสง -->
     <div id="hudOrbitalCore" class="hud-orbital-core">
       <div class="hud-core-ambient-glow"></div>
       <svg class="hud-orbital-svg" viewBox="0 0 640 640">
@@ -146,34 +524,24 @@
           </filter>
         </defs>
 
-        <!-- เส้นแกนอ้างอิงแนวตั้ง-แนวนอนแบบ Technical Crosshair -->
         <line class="hud-crosshair-line" x1="320" y1="36" x2="320" y2="604" stroke-width="1" stroke-dasharray="4 6" />
         <line class="hud-crosshair-sub" x1="60" y1="320" x2="580" y2="320" stroke-width="1" stroke-dasharray="3 8" />
 
-        <!-- วงโคจรที่ 1 -->
         <g class="orbit-ring-group orbit-slow-cw">
-          <ellipse class="hud-orbit-ellipse" cx="320" cy="320" rx="108" ry="268"
-                   fill="none" stroke-width="1.15" />
+          <ellipse class="hud-orbit-ellipse" cx="320" cy="320" rx="108" ry="268" fill="none" stroke-width="1.15" />
           <circle class="hud-orbit-node" cx="320" cy="52" r="3" />
         </g>
 
-        <!-- วงโคจรที่ 2 -->
         <g class="orbit-ring-group orbit-med-ccw">
-          <ellipse class="hud-orbit-ellipse-sub" cx="320" cy="320" rx="108" ry="268"
-                   transform="rotate(58 320 320)"
-                   fill="none" stroke-width="1.1" />
+          <ellipse class="hud-orbit-ellipse-sub" cx="320" cy="320" rx="108" ry="268" transform="rotate(58 320 320)" fill="none" stroke-width="1.1" />
           <circle class="hud-orbit-node" cx="547" cy="178" r="2.5" />
         </g>
 
-        <!-- วงโคจรที่ 3 -->
         <g class="orbit-ring-group orbit-slow-ccw">
-          <ellipse class="hud-orbit-ellipse-sub" cx="320" cy="320" rx="108" ry="268"
-                   transform="rotate(-58 320 320)"
-                   fill="none" stroke-width="1.1" />
+          <ellipse class="hud-orbit-ellipse-sub" cx="320" cy="320" rx="108" ry="268" transform="rotate(-58 320 320)" fill="none" stroke-width="1.1" />
           <circle class="hud-orbit-node" cx="93" cy="462" r="2.5" />
         </g>
 
-        <!-- ตัวอักษร HUD รอบวงโคจร -->
         <g class="hud-orbit-labels" font-family="'Space Mono', monospace" font-size="10" text-anchor="middle">
           <text x="235" y="165">O</text>
           <text x="405" y="165">E</text>
@@ -183,34 +551,20 @@
           <text x="405" y="485">02</text>
         </g>
 
-        <!-- ลูกบาศก์ Isometric 3D เรืองแสงสีน้ำเงิน/ไซยานตรงกลาง -->
         <g class="hud-center-cube" filter="url(#neonBlueBlur)">
           <circle cx="320" cy="320" r="78" fill="url(#cubeCoreGlow)" />
-
-          <!-- ด้านซ้ายของลูกบาศก์ -->
-          <polygon points="320,320 268,290 268,350 320,380"
-                   fill="url(#cubeLeftGrad)" stroke="rgba(147,197,253,0.7)" stroke-width="1.2" />
-          <!-- ด้านขวาของลูกบาศก์ -->
-          <polygon points="320,320 372,290 372,350 320,380"
-                   fill="url(#cubeRightGrad)" stroke="rgba(147,197,253,0.75)" stroke-width="1.2" />
-          <!-- ด้านบนของลูกบาศก์ -->
-          <polygon points="320,260 372,290 320,320 268,290"
-                   fill="url(#cubeTopGrad)" stroke="#e0f2fe" stroke-width="1.3" />
-
-          <!-- แกนแสงสว่างภายในลูกบาศก์ -->
+          <polygon points="320,320 268,290 268,350 320,380" fill="url(#cubeLeftGrad)" stroke="rgba(147,197,253,0.7)" stroke-width="1.2" />
+          <polygon points="320,320 372,290 372,350 320,380" fill="url(#cubeRightGrad)" stroke="rgba(147,197,253,0.75)" stroke-width="1.2" />
+          <polygon points="320,260 372,290 320,320 268,290" fill="url(#cubeTopGrad)" stroke="#e0f2fe" stroke-width="1.3" />
           <circle cx="320" cy="320" r="22" fill="url(#cubeCoreGlow)" />
-
-          <!-- สัญลักษณ์ OEE บนหน้าตัดลูกบาศก์ -->
           <text x="320" y="294" fill="#ffffff" font-family="'JetBrains Mono', monospace" font-weight="800" font-size="11" text-anchor="middle" letter-spacing="1.5">OEE</text>
         </g>
       </svg>
     </div>
 
-    <!-- 4. เลเยอร์ฝุ่นละออง 3D และ Grain Texture -->
     <canvas id="hudDustCanvas" class="hud-dust-canvas"></canvas>
     <div class="hud-grain-overlay"></div>
 
-    <!-- 5. กรอบข้อมูลมุมจอ Technical HUD -->
     <div class="hud-corner-frame">
       <div class="hud-corner-tl">
         <span class="hud-code-tag">OEE-CNC // ADAPTIVE TELEMETRY</span>
@@ -258,7 +612,7 @@
             <div class="role-card-icon">👔</div>
             <div class="role-card-title">ผู้จัดการ (Manager)</div>
             <p class="role-card-desc">
-              ควบคุมเครื่องจักร เชื่อมต่อ Arduino ดูกราฟ OEE ตั้งค่าเวลามาตรฐาน USL/LSL และดู QC Control Chart (ต้องใช้รหัสผ่าน)
+              ควบคุมเครื่องจักร เชื่อมต่อ Arduino ดู Digital Twin & กราฟ OEE ตั้งค่าเวลามาตรฐาน USL/LSL และดู QC Control Chart (ต้องใช้รหัสผ่าน)
             </p>
           </div>
           <span class="role-card-cta cta-manager">🔒 เข้าสู่ระบบผู้จัดการ ➔</span>
@@ -293,7 +647,6 @@
       <div class="nav-right">
         <div id="firebaseStatus" class="status-pill">กำลังเชื่อมต่อ...</div>
 
-        <!-- ปุ่มเลือกบทบาทปุ่มเดียว -->
         <button type="button" id="btnOpenRoleGate" class="btn btn-outline-primary btn-sm" title="เปลี่ยนบทบาทผู้ใช้งาน">
           🔄 เลือกบทบาท
         </button>
@@ -482,6 +835,7 @@
     =========================================== -->
     <section id="page-dashboard" class="page-section">
       
+      <!-- ส่วนที่ 1: แถบสถานะเครื่องจักร -->
       <div class="machine-bar">
         <div class="machine-info-col">
           <div class="machine-header-row">
@@ -538,6 +892,238 @@
         </div>
       </div>
 
+      <!-- =========================================================
+           ส่วนที่ 2: DIGITAL TWIN SIMULATION (อยู่ใต้ส่วนของสถานะ)
+      ========================================================== -->
+      <section id="digitalTwinSection" class="dt-card">
+        <div class="dt-header">
+          <div class="dt-title-group">
+            <h3 class="dt-title">DIGITAL TWIN // 2-STATION CNC CONVEYOR LINE</h3>
+            <p class="dt-subtitle">จำลองการเคลื่อนที่ชิ้นงานบนรางขั้นบันได 3 ระดับ พร้อมไฟเซนเซอร์ S1–S3 และหัวเจาะ CNC แบบเรียลไทม์</p>
+          </div>
+
+          <!-- Badge แสดงสถานะเซนเซอร์ด้านบน -->
+          <div class="sensor-badges-bar">
+            <div id="badgeSensor1" class="sensor-badge">
+              <span class="badge-dot"></span>
+              <span>S1: <strong id="badgeState1">IDLE</strong></span>
+            </div>
+            <div id="badgeSensor2" class="sensor-badge">
+              <span class="badge-dot"></span>
+              <span>S2: <strong id="badgeState2">IDLE</strong></span>
+            </div>
+            <div id="badgeSensor3" class="sensor-badge">
+              <span class="badge-dot"></span>
+              <span>S3: <strong id="badgeState3">IDLE</strong></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- เวทีแสดงผล SVG กราฟิกเครื่องจักรและสายพาน -->
+        <div class="dt-stage-viewport">
+          <div class="stage-telemetry-overlay">
+            <span class="telemetry-tag" id="stageZoneText">ZONE: ENTRY FEEDER (LEVEL 1)</span>
+            <span class="telemetry-tag" id="stageCoordText">POS: X=118 | Y=165</span>
+          </div>
+
+          <svg id="digitalTwinSvg" class="dt-svg" viewBox="0 0 1100 390" preserveAspectRatio="xMidYMid meet">
+            <defs>
+              <filter id="dtCyanGlow" x="-40%" y="-40%" width="180%" height="180%">
+                <feGaussianBlur stdDeviation="4" result="blur" />
+                <feMerge>
+                  <feMergeNode in="blur" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+
+              <filter id="dtWorkpieceGlow" x="-60%" y="-60%" width="220%" height="220%">
+                <feGaussianBlur stdDeviation="6.5" result="blur1" />
+                <feGaussianBlur stdDeviation="2" result="blur2" />
+                <feMerge>
+                  <feMergeNode in="blur1" />
+                  <feMergeNode in="blur2" />
+                  <feMergeNode in="SourceGraphic" />
+                </feMerge>
+              </filter>
+
+              <pattern id="dtRailHatchPattern" width="10" height="10" patternTransform="rotate(45 0 0)" patternUnits="userSpaceOnUse">
+                <line x1="0" y1="0" x2="0" y2="10" stroke="#29b6f6" stroke-width="1.4" stroke-opacity="0.55" />
+              </pattern>
+
+              <linearGradient id="dtBaseBodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#131c2e" />
+                <stop offset="100%" stop-color="#0b111e" />
+              </linearGradient>
+
+              <linearGradient id="dtCncColumnGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#1a2639" />
+                <stop offset="100%" stop-color="#0f172a" />
+              </linearGradient>
+
+              <linearGradient id="dtWorkpieceGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                <stop offset="0%" stop-color="#a5f3fc" />
+                <stop offset="45%" stop-color="#22d3ee" />
+                <stop offset="100%" stop-color="#0284c7" />
+              </linearGradient>
+            </defs>
+
+            <!-- เส้นตารางพื้นหลังแนวนอน -->
+            <g stroke="rgba(56, 189, 248, 0.08)" stroke-width="1">
+              <line x1="20" y1="75" x2="1080" y2="75" />
+              <line x1="20" y1="145" x2="1080" y2="145" />
+              <line x1="20" y1="215" x2="1080" y2="215" />
+              <line x1="20" y1="285" x2="1080" y2="285" />
+              <line x1="20" y1="355" x2="1080" y2="355" />
+            </g>
+
+            <!-- โครงสร้างแท่นขั้นบันได 3 ระดับ -->
+            <polygon
+              points="95,165 285,165 385,240 615,240 715,315 915,315 955,345 1045,345 1045,368 95,368"
+              fill="url(#dtBaseBodyGrad)"
+              stroke="#29b6f6"
+              stroke-width="2"
+              stroke-linejoin="round"
+            />
+
+            <!-- แถบรางขั้นบันไดลายทแยง -->
+            <polygon
+              points="95,165 285,165 385,240 615,240 715,315 915,315 955,345 1045,345 1045,353 952,353 912,323 712,323 612,248 382,248 282,173 95,173"
+              fill="url(#dtRailHatchPattern)"
+              stroke="#38bdf8"
+              stroke-width="1.5"
+              stroke-linejoin="round"
+            />
+
+            <!-- เส้นประแสดงแนวระดับรางด้านบน -->
+            <polyline
+              points="105,155 288,155 388,230 618,230 718,305 918,305 958,335 1035,335"
+              fill="none"
+              stroke="rgba(56, 189, 248, 0.24)"
+              stroke-width="1.2"
+              stroke-dasharray="5 6"
+            />
+
+            <!-- สถานีเครื่องจักร CNC 1 (STATION 01) -->
+            <g id="station01Group">
+              <text x="498" y="88" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="13" text-anchor="middle" letter-spacing="1.2">STATION 01</text>
+              <rect x="442" y="232" width="108" height="8" rx="2" fill="#0f172a" stroke="#38bdf8" stroke-width="1.6" />
+              <rect x="475" y="99" width="36" height="15" rx="1.5" fill="#131c2e" stroke="#38bdf8" stroke-width="1.6" />
+              <polygon
+                points="461,232 469,114 515,114 509,232"
+                fill="url(#dtCncColumnGrad)"
+                stroke="#38bdf8"
+                stroke-width="1.8"
+                stroke-linejoin="round"
+              />
+              <line x1="475" y1="138" x2="472" y2="212" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" />
+
+              <!-- ชุดหัวเจาะ CNC สถานี 1 -->
+              <g id="cncHead1" class="cnc-spindle-head">
+                <rect x="510" y="138" width="38" height="44" rx="2" fill="#131c2e" stroke="#38bdf8" stroke-width="1.7" />
+                <rect x="520" y="182" width="18" height="12" rx="1" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" />
+                <polygon points="526,194 532,194 529,213" fill="#7dd3fc" stroke="#38bdf8" stroke-width="1" />
+                <circle class="drill-spark" cx="529" cy="215" r="4" fill="#ffffff" filter="url(#dtCyanGlow)" />
+              </g>
+            </g>
+
+            <!-- สถานีเครื่องจักร CNC 2 (STATION 02) -->
+            <g id="station02Group">
+              <text x="803" y="163" fill="#38bdf8" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="13" text-anchor="middle" letter-spacing="1.2">STATION 02</text>
+              <rect x="747" y="307" width="108" height="8" rx="2" fill="#0f172a" stroke="#38bdf8" stroke-width="1.6" />
+              <rect x="780" y="174" width="36" height="15" rx="1.5" fill="#131c2e" stroke="#38bdf8" stroke-width="1.6" />
+              <polygon
+                points="766,307 774,189 820,189 814,307"
+                fill="url(#dtCncColumnGrad)"
+                stroke="#38bdf8"
+                stroke-width="1.8"
+                stroke-linejoin="round"
+              />
+              <line x1="780" y1="213" x2="777" y2="287" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" />
+
+              <!-- ชุดหัวเจาะ CNC สถานี 2 -->
+              <g id="cncHead2" class="cnc-spindle-head">
+                <rect x="815" y="213" width="38" height="44" rx="2" fill="#131c2e" stroke="#38bdf8" stroke-width="1.7" />
+                <rect x="825" y="257" width="18" height="12" rx="1" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" />
+                <polygon points="831,269 837,269 834,288" fill="#7dd3fc" stroke="#38bdf8" stroke-width="1" />
+                <circle class="drill-spark" cx="834" cy="290" r="4" fill="#ffffff" filter="url(#dtCyanGlow)" />
+              </g>
+            </g>
+
+            <!-- จุดเซนเซอร์ 3 จุด (S1, S2, S3) -->
+            <g id="sensorNode1" class="sensor-node" transform="translate(215, 159)">
+              <circle class="sensor-ripple sensor-ripple-1" cx="0" cy="0" r="7" />
+              <circle class="sensor-ripple sensor-ripple-2" cx="0" cy="0" r="7" />
+              <rect class="sensor-led-core" x="-12" y="-5" width="24" height="10" rx="5" />
+              <text x="0" y="-13" fill="#94a3b8" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="12" text-anchor="middle">S1</text>
+            </g>
+
+            <g id="sensorNode2" class="sensor-node" transform="translate(576, 234)">
+              <circle class="sensor-ripple sensor-ripple-1" cx="0" cy="0" r="7" />
+              <circle class="sensor-ripple sensor-ripple-2" cx="0" cy="0" r="7" />
+              <rect class="sensor-led-core" x="-12" y="-5" width="24" height="10" rx="5" />
+              <text x="0" y="-13" fill="#94a3b8" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="12" text-anchor="middle">S2</text>
+            </g>
+
+            <g id="sensorNode3" class="sensor-node" transform="translate(881, 309)">
+              <circle class="sensor-ripple sensor-ripple-1" cx="0" cy="0" r="7" />
+              <circle class="sensor-ripple sensor-ripple-2" cx="0" cy="0" r="7" />
+              <rect class="sensor-led-core" x="-12" y="-5" width="24" height="10" rx="5" />
+              <text x="0" y="-13" fill="#94a3b8" font-family="'JetBrains Mono', monospace" font-weight="700" font-size="12" text-anchor="middle">S3</text>
+            </g>
+
+            <!-- ชิ้นงานเรืองแสงสีฟ้าไซยาน (Workpiece) -->
+            <g id="workpieceObj" transform="translate(118, 165)" filter="url(#dtWorkpieceGlow)">
+              <rect
+                x="-19"
+                y="-15"
+                width="38"
+                height="14"
+                rx="3.5"
+                fill="url(#dtWorkpieceGrad)"
+                stroke="#e0f2fe"
+                stroke-width="1.6"
+              />
+              <line x1="-13" y1="-11.5" x2="13" y2="-11.5" stroke="#ffffff" stroke-width="1.5" stroke-linecap="round" opacity="0.85" />
+            </g>
+          </svg>
+        </div>
+
+        <!-- แถบปุ่มควบคุมจำลองเฉพาะกราฟิก Digital Twin -->
+        <div class="dt-controls-bar">
+          <div class="dt-control-group">
+            <button type="button" id="btnToggleAutoFlow" class="btn-dt btn-dt-primary">
+              ▶ จำลองชิ้นงานไหลอัตโนมัติ (เฉพาะภาพ)
+            </button>
+            <button type="button" id="btnResetTwin" class="btn-dt btn-dt-reset">
+              ↺ รีเซ็ตภาพ
+            </button>
+          </div>
+
+          <div class="dt-control-group">
+            <span class="dt-control-label">เช็กตำแหน่งภาพ:</span>
+
+            <div class="sensor-test-box">
+              <span class="sensor-test-tag">S1</span>
+              <button type="button" class="btn-sensor-step in-btn" id="btnS1In" onclick="testSensorStep(1, true)">เข้า</button>
+              <button type="button" class="btn-sensor-step out-btn active" id="btnS1Out" onclick="testSensorStep(1, false)">ออก</button>
+            </div>
+
+            <div class="sensor-test-box">
+              <span class="sensor-test-tag">S2</span>
+              <button type="button" class="btn-sensor-step in-btn" id="btnS2In" onclick="testSensorStep(2, true)">เข้า</button>
+              <button type="button" class="btn-sensor-step out-btn active" id="btnS2Out" onclick="testSensorStep(2, false)">ออก</button>
+            </div>
+
+            <div class="sensor-test-box">
+              <span class="sensor-test-tag">S3</span>
+              <button type="button" class="btn-sensor-step in-btn" id="btnS3In" onclick="testSensorStep(3, true)">เข้า</button>
+              <button type="button" class="btn-sensor-step out-btn active" id="btnS3Out" onclick="testSensorStep(3, false)">ออก</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ส่วนที่ 3: นับรอบเหตุการณ์ -->
       <div class="event-counter-grid">
         <div class="event-box event-normal">
           <div>
@@ -662,18 +1248,38 @@
         </div>
       </div>
 
+      <!-- =========================================================
+           การ์ดจำลองเซ็นเซอร์ (ทดสอบโดยไม่ต้องใช้บอร์ด) + เชื่อมต่อ Arduino
+      ========================================================== -->
       <div class="card simulator-card">
-        <div class="card-header" style="flex-wrap: wrap; gap: 10px; margin-bottom: 10px;">
-          <span class="card-title text-amber">เชื่อมต่อบอร์ด Arduino (รับสัญญาณเซ็นเซอร์ 1 ➔ 2 ➔ 3 อัตโนมัติ)</span>
+        <div class="card-header" style="flex-wrap: wrap; gap: 10px; margin-bottom: 12px;">
+          <span class="card-title text-amber">จำลองเซ็นเซอร์ทดสอบระบบ & เชื่อมต่อบอร์ด Arduino (1 ➔ 2 ➔ 3)</span>
           <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
-            <span id="arduinoStatusBadge" class="std-badge">🔌 ยังไม่ได้เชื่อมต่อบอร์ด</span>
+            <span id="arduinoStatusBadge" class="std-badge">🔌 โหมดจำลอง (ยังไม่ต่อบอร์ด)</span>
             <button type="button" id="btnConnectArduino" class="btn btn-blue btn-sm">
               🔌 เชื่อมต่อ Arduino (USB)
             </button>
           </div>
         </div>
+
+        <!-- ปุ่มกดจำลองเซ็นเซอร์ 1 -> 2 -> 3 สำหรับทดสอบจับเวลา & บันทึกชิ้นงานจริง -->
+        <div class="sim-sensor-bar">
+          <button type="button" id="btnSimSensor1" class="btn btn-blue">
+            1️⃣ กด Sensor 1 (เริ่มจับเวลา S1)
+          </button>
+          <button type="button" id="btnSimSensor2" class="btn btn-amber" disabled>
+            2️⃣ กด Sensor 2 (จบ S1 ➔ เริ่ม S2)
+          </button>
+          <button type="button" id="btnSimSensor3" class="btn btn-green" disabled>
+            3️⃣ กด Sensor 3 (จบ S2 ➔ บันทึกชิ้นงาน)
+          </button>
+          <button type="button" id="btnSimResetCycle" class="btn btn-red btn-sm" style="flex: 0 0 auto;" title="รีเซ็ตเฉพาะรอบที่กำลังจับเวลาอยู่">
+            ↺ รีเซ็ตรอบนี้
+          </button>
+        </div>
+
         <div id="arduinoSerialLog" class="idle-monitor" style="width: 100%;">
-          สถานะเซ็นเซอร์: รอรับสัญญาณ Sensor 1 จากบอร์ด Arduino...
+          สถานะเซ็นเซอร์: กดปุ่ม '▶ เดินเครื่อง (Start)' ด้านบน แล้วกดปุ่มจำลอง Sensor 1 ➔ 2 ➔ 3 เพื่อทดสอบได้ทันทีครับ
         </div>
       </div>
 
@@ -1037,18 +1643,15 @@
   </div>
 
   <!-- =========================================================
-       สคริปต์ควบคุมหน้าต่างเข้าสู่ระบบ, เลือกบทบาท, สลับโหมดสี และแอนิเมชัน 3D
-       (ทำงานทันที 100% แม้ยังโหลด Firebase หรือกราฟไม่เสร็จ)
+       สคริปต์ควบคุม UI หลัก + แอนิเมชัน 3D
   ========================================================== -->
   <script>
     (function initCoreUIAndVisuals() {
-      // แจ้งเตือนหากเปิดไฟล์ตรงๆ โดยไม่ผ่าน Live Server
       if (window.location.protocol === "file:") {
         const st = document.getElementById("firebaseStatus");
         if (st) st.textContent = "⚠️ กรุณาเปิดผ่าน Live Server";
       }
 
-      // 1. ระบบสลับโหมดมืด / โหมดสว่าง
       const btnThemeToggle = document.getElementById("btnThemeToggle");
       const themeIcon = document.getElementById("themeIcon");
       const themeText = document.getElementById("themeText");
@@ -1063,7 +1666,6 @@
       const savedTheme = localStorage.getItem("oee_cnc_theme") || "dark";
       applyTheme(savedTheme);
 
-      // 2. ระบบเลือกบทบาท พนักงาน vs ผู้จัดการ
       const welcomeGate = document.getElementById("welcomeRoleGate");
       const loginModal = document.getElementById("managerLoginModal");
       const loginInput = document.getElementById("managerPasswordInput");
@@ -1186,7 +1788,6 @@
         });
       }
 
-      // สลับแท็บเมนูในโหมดผู้จัดการ
       document.querySelectorAll("#managerNavTabs .tab-btn").forEach(btn => {
         btn.addEventListener("click", () => {
           if (!window.OEE_UI.isManager) return;
@@ -1201,7 +1802,6 @@
         });
       });
 
-      // ตรวจสอบสถานะการล็อกอินค้างจาก Session เดิม
       const initialSessionRole = sessionStorage.getItem("oee_session_role");
       if (initialSessionRole === "manager") {
         window.OEE_UI.setRoleMode(true);
@@ -1211,7 +1811,6 @@
         welcomeGate.classList.add("open");
       }
 
-      // 3. แอนิเมชัน 3D Parallax & Dust Particles
       const cursorGlow = document.getElementById("hudCursorGlow");
       const sculptureWrap = document.getElementById("hudSculptureWrap");
       const orbitalCore = document.getElementById("hudOrbitalCore");
@@ -1314,6 +1913,337 @@
         });
         obs.observe(el, { childList: true, characterData: true, subtree: true });
       });
+    })();
+  </script>
+
+  <!-- =========================================================
+       สคริปต์ระบบจำลอง DIGITAL TWIN & API เชื่อมต่อเซนเซอร์จริง
+  ========================================================== -->
+  <script>
+    (function initDigitalTwinEngine() {
+      const TRACK_WAYPOINTS = [
+        { x: 118, y: 165, zone: "ENTRY FEEDER (LEVEL 1)" },
+        { x: 285, y: 165, zone: "ENTRY FEEDER (LEVEL 1)" },
+        { x: 385, y: 240, zone: "TRANSFER RAMP 01" },
+        { x: 615, y: 240, zone: "STATION 01 MACHINING ZONE" },
+        { x: 715, y: 315, zone: "TRANSFER RAMP 02" },
+        { x: 915, y: 315, zone: "STATION 02 MACHINING ZONE" },
+        { x: 955, y: 345, zone: "EXIT CHUTE" },
+        { x: 1025, y: 345, zone: "COMPLETED OUTPUT TRAY" }
+      ];
+
+      const TRACK_SEGMENTS = [];
+      let TOTAL_TRACK_LENGTH = 0;
+      for (let i = 0; i < TRACK_WAYPOINTS.length - 1; i++) {
+        const p1 = TRACK_WAYPOINTS[i];
+        const p2 = TRACK_WAYPOINTS[i + 1];
+        const dx = p2.x - p1.x;
+        const dy = p2.y - p1.y;
+        const length = Math.hypot(dx, dy);
+        const angleDeg = (Math.atan2(dy, dx) * 180) / Math.PI;
+        TRACK_SEGMENTS.push({
+          startDist: TOTAL_TRACK_LENGTH,
+          endDist: TOTAL_TRACK_LENGTH + length,
+          length,
+          p1,
+          p2,
+          angleDeg,
+          zone: p1.zone
+        });
+        TOTAL_TRACK_LENGTH += length;
+      }
+
+      const SENSOR_ZONES = {
+        1: { minX: 192, maxX: 238, anchorDist: 97 },
+        2: { minX: 525, maxX: 592, anchorDist: 465 },
+        3: { minX: 830, maxX: 896, anchorDist: 895 }
+      };
+
+      const twinState = {
+        sensors: { 1: false, 2: false, 3: false },
+        distance: 0,
+        isAutoRunning: false,
+        rafId: null,
+        glideRafId: null,
+        lastTimestamp: null,
+        dwellTimer: 0,
+        machinedSt1ThisCycle: false,
+        machinedSt2ThisCycle: false
+      };
+
+      const workpieceEl = document.getElementById("workpieceObj");
+      const cncHead1El = document.getElementById("cncHead1");
+      const cncHead2El = document.getElementById("cncHead2");
+      const stageZoneEl = document.getElementById("stageZoneText");
+      const stageCoordEl = document.getElementById("stageCoordText");
+      const btnToggleAuto = document.getElementById("btnToggleAutoFlow");
+      const btnReset = document.getElementById("btnResetTwin");
+
+      function setWorkpiecePosition(x, y, angleDeg = 0, zoneName = "") {
+        if (workpieceEl) {
+          workpieceEl.setAttribute(
+            "transform",
+            `translate(${x.toFixed(2)}, ${y.toFixed(2)}) rotate(${angleDeg.toFixed(2)})`
+          );
+        }
+        if (stageCoordEl) {
+          stageCoordEl.textContent = `POS: X=${Math.round(x)} | Y=${Math.round(y)}`;
+        }
+        if (zoneName && stageZoneEl) {
+          stageZoneEl.textContent = `ZONE: ${zoneName}`;
+        }
+      }
+
+      function setWorkpieceByDistance(dist) {
+        const clamped = Math.max(0, Math.min(TOTAL_TRACK_LENGTH, dist));
+        twinState.distance = clamped;
+
+        let activeSeg = TRACK_SEGMENTS[TRACK_SEGMENTS.length - 1];
+        for (let i = 0; i < TRACK_SEGMENTS.length; i++) {
+          if (clamped <= TRACK_SEGMENTS[i].endDist) {
+            activeSeg = TRACK_SEGMENTS[i];
+            break;
+          }
+        }
+
+        const localRatio = activeSeg.length > 0
+          ? (clamped - activeSeg.startDist) / activeSeg.length
+          : 0;
+        const x = activeSeg.p1.x + (activeSeg.p2.x - activeSeg.p1.x) * localRatio;
+        const y = activeSeg.p1.y + (activeSeg.p2.y - activeSeg.p1.y) * localRatio;
+
+        setWorkpiecePosition(x, y, activeSeg.angleDeg, activeSeg.zone);
+        return { x, y, angleDeg: activeSeg.angleDeg, zone: activeSeg.zone };
+      }
+
+      function glideToDistance(targetDist, durationMs = 450, onComplete = null) {
+        if (twinState.glideRafId) {
+          cancelAnimationFrame(twinState.glideRafId);
+          twinState.glideRafId = null;
+        }
+        const startDist = twinState.distance;
+        const startTime = performance.now();
+
+        function step(now) {
+          const t = Math.min(1, (now - startTime) / Math.max(1, durationMs));
+          const eased = 1 - Math.pow(1 - t, 3);
+          setWorkpieceByDistance(startDist + (targetDist - startDist) * eased);
+          if (t < 1) {
+            twinState.glideRafId = requestAnimationFrame(step);
+          } else {
+            twinState.glideRafId = null;
+            if (typeof onComplete === "function") onComplete();
+          }
+        }
+        twinState.glideRafId = requestAnimationFrame(step);
+      }
+
+      function setStationDrillState(stationIndex, isDrilling) {
+        const headEl = stationIndex === 1 ? cncHead1El : cncHead2El;
+        if (headEl) {
+          headEl.classList.toggle("drilling", Boolean(isDrilling));
+        }
+      }
+
+      function setSensorState(sensorIndex, isActive) {
+        const idx = Number(sensorIndex);
+        if (![1, 2, 3].includes(idx)) return;
+
+        const active = Boolean(isActive);
+        twinState.sensors[idx] = active;
+
+        const nodeEl = document.getElementById(`sensorNode${idx}`);
+        if (nodeEl) nodeEl.classList.toggle("active", active);
+
+        const badgeEl = document.getElementById(`badgeSensor${idx}`);
+        const badgeTextEl = document.getElementById(`badgeState${idx}`);
+        if (badgeEl) badgeEl.classList.toggle("detected", active);
+        if (badgeTextEl) badgeTextEl.textContent = active ? "DETECTED" : "IDLE";
+
+        const btnIn = document.getElementById(`btnS${idx}In`);
+        const btnOut = document.getElementById(`btnS${idx}Out`);
+        if (btnIn) btnIn.classList.toggle("active", active);
+        if (btnOut) btnOut.classList.toggle("active", !active);
+
+        if (idx === 2) setStationDrillState(1, active);
+        if (idx === 3) setStationDrillState(2, active);
+      }
+
+      function testSensorStep(sensorIndex, isEntering) {
+        stopAutoFlow();
+        const idx = Number(sensorIndex);
+
+        if (isEntering) {
+          [1, 2, 3].forEach((s) => {
+            if (s !== idx) setSensorState(s, false);
+          });
+          setWorkpieceByDistance(SENSOR_ZONES[idx].anchorDist);
+          setSensorState(idx, true);
+        } else {
+          setSensorState(idx, false);
+          const nextDist = Math.min(TOTAL_TRACK_LENGTH, SENSOR_ZONES[idx].anchorDist + 48);
+          setWorkpieceByDistance(nextDist);
+        }
+      }
+
+      function autoFlowLoop(timestamp) {
+        if (!twinState.isAutoRunning) return;
+
+        if (!twinState.lastTimestamp) twinState.lastTimestamp = timestamp;
+        const dt = Math.min(0.05, (timestamp - twinState.lastTimestamp) / 1000);
+        twinState.lastTimestamp = timestamp;
+
+        if (twinState.dwellTimer > 0) {
+          twinState.dwellTimer -= dt;
+          twinState.rafId = requestAnimationFrame(autoFlowLoop);
+          return;
+        }
+
+        const speedPxPerSec = 155;
+        let nextDist = twinState.distance + speedPxPerSec * dt;
+
+        if (nextDist >= TOTAL_TRACK_LENGTH) {
+          nextDist = 0;
+          twinState.machinedSt1ThisCycle = false;
+          twinState.machinedSt2ThisCycle = false;
+        }
+
+        const pos = setWorkpieceByDistance(nextDist);
+
+        const inS1 = pos.x >= SENSOR_ZONES[1].minX && pos.x <= SENSOR_ZONES[1].maxX;
+        const inS2 = pos.x >= SENSOR_ZONES[2].minX && pos.x <= SENSOR_ZONES[2].maxX;
+        const inS3 = pos.x >= SENSOR_ZONES[3].minX && pos.x <= SENSOR_ZONES[3].maxX;
+
+        if (twinState.sensors[1] !== inS1) setSensorState(1, inS1);
+        if (twinState.sensors[2] !== inS2) setSensorState(2, inS2);
+        if (twinState.sensors[3] !== inS3) setSensorState(3, inS3);
+
+        if (inS2 && !twinState.machinedSt1ThisCycle && pos.x >= 554) {
+          twinState.machinedSt1ThisCycle = true;
+          twinState.dwellTimer = 0.65;
+        } else if (inS3 && !twinState.machinedSt2ThisCycle && pos.x >= 858) {
+          twinState.machinedSt2ThisCycle = true;
+          twinState.dwellTimer = 0.65;
+        }
+
+        twinState.rafId = requestAnimationFrame(autoFlowLoop);
+      }
+
+      function startAutoFlow() {
+        if (twinState.isAutoRunning) return;
+        if (twinState.glideRafId) {
+          cancelAnimationFrame(twinState.glideRafId);
+          twinState.glideRafId = null;
+        }
+        twinState.isAutoRunning = true;
+        twinState.lastTimestamp = null;
+
+        if (btnToggleAuto) {
+          btnToggleAuto.classList.add("running");
+          btnToggleAuto.innerHTML = "⏸ หยุดจำลองชั่วคราว";
+        }
+        twinState.rafId = requestAnimationFrame(autoFlowLoop);
+      }
+
+      function stopAutoFlow() {
+        twinState.isAutoRunning = false;
+        if (twinState.rafId) {
+          cancelAnimationFrame(twinState.rafId);
+          twinState.rafId = null;
+        }
+        if (btnToggleAuto) {
+          btnToggleAuto.classList.remove("running");
+          btnToggleAuto.innerHTML = "▶ จำลองชิ้นงานไหลอัตโนมัติ (เฉพาะภาพ)";
+        }
+      }
+
+      function resetDigitalTwin() {
+        stopAutoFlow();
+        if (twinState.glideRafId) {
+          cancelAnimationFrame(twinState.glideRafId);
+          twinState.glideRafId = null;
+        }
+        twinState.dwellTimer = 0;
+        twinState.machinedSt1ThisCycle = false;
+        twinState.machinedSt2ThisCycle = false;
+
+        [1, 2, 3].forEach((idx) => setSensorState(idx, false));
+        setStationDrillState(1, false);
+        setStationDrillState(2, false);
+        setWorkpieceByDistance(0);
+      }
+
+      if (btnToggleAuto) {
+        btnToggleAuto.addEventListener("click", () => {
+          if (twinState.isAutoRunning) stopAutoFlow();
+          else startAutoFlow();
+        });
+      }
+
+      if (btnReset) {
+        btnReset.addEventListener("click", resetDigitalTwin);
+      }
+
+      window.setSensorState = setSensorState;
+      window.testSensorStep = testSensorStep;
+      window.DigitalTwinCNC = {
+        setSensorState,
+        setWorkpiecePosition,
+        setWorkpieceByDistance,
+        setStationDrillState,
+        startAutoFlow,
+        stopAutoFlow,
+        reset: resetDigitalTwin,
+        onSensor1Enter() {
+          stopAutoFlow();
+          [2, 3].forEach(s => setSensorState(s, false));
+          setWorkpieceByDistance(0);
+          glideToDistance(SENSOR_ZONES[1].anchorDist, 320, () => {
+            setSensorState(1, true);
+          });
+        },
+        onStation1Start() {
+          stopAutoFlow();
+          [2, 3].forEach(s => setSensorState(s, false));
+          setWorkpieceByDistance(0);
+          setSensorState(1, true);
+          setTimeout(() => {
+            setSensorState(1, false);
+            glideToDistance(410, 480, () => {
+              setStationDrillState(1, true);
+            });
+          }, 260);
+        },
+        onSensor2Enter() {
+          stopAutoFlow();
+          setStationDrillState(1, false);
+          glideToDistance(SENSOR_ZONES[2].anchorDist, 320, () => {
+            setSensorState(2, true);
+            setTimeout(() => {
+              if (!twinState.isAutoRunning && twinState.sensors[2]) {
+                setSensorState(2, false);
+                glideToDistance(760, 480, () => {
+                  setStationDrillState(2, true);
+                });
+              }
+            }, 450);
+          });
+        },
+        onCycleDone() {
+          stopAutoFlow();
+          setStationDrillState(2, false);
+          setSensorState(2, false);
+          glideToDistance(SENSOR_ZONES[3].anchorDist, 340, () => {
+            setSensorState(3, true);
+            setTimeout(() => {
+              setSensorState(3, false);
+              glideToDistance(TOTAL_TRACK_LENGTH, 420);
+            }, 550);
+          });
+        }
+      };
+
+      setWorkpieceByDistance(0);
     })();
   </script>
 
